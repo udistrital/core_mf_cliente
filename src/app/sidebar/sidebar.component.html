@@ -1,0 +1,7 @@
+<div class="sidebar-container" [@sidebarAnimation]="sidebarAnimation">
+    <mat-nav-list>
+        @for (item of navItems; track $index) {
+            <ng-uui-menu [item]="item"></ng-uui-menu>
+        }
+    </mat-nav-list>
+</div>

@@ -1,0 +1,47 @@
+@import url("https://pruebasassets.portaloas.udistrital.edu.co/font-style.css");
+
+:host {
+    display: block;
+    outline: none;
+}
+
+:host .mat-list-item.active {
+    background-color: var(--color100);
+    color: var(--primary);
+}
+
+:host:hover > .mat-list-item:not(.expanded),
+:host:focus > .mat-list-item:not(.expanded) {
+    background-color: var(--color100) !important;
+    color: var(--primary);
+}
+
+.mat-list-item.active {
+    background-color: var(--color100);
+    color: var(--primary);
+}
+
+.mat-list-item {
+    padding: 0 0;
+    background-color: var(--primary);
+    color: var(--color100);
+    font-family: "Open Sans";
+    font-size: 1em;
+}
+
+.mat-list-item-content {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.mat-list-item .display-name {
+    width: 34ex;
+    padding-left: 15px ;
+}
+
+@media screen and (max-width: 425px) {
+    .mat-list-item .display-name {
+        width: 75vw;
+    }
+}

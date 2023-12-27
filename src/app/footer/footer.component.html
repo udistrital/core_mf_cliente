@@ -1,0 +1,30 @@
+<div class="footer-div">
+  <figure class="imageContainer">
+    <img src="{{basePathAssets + 'logotipos_aplicativos_svg/ud.svg'}}" class="card-image" alt="logo-udistrital">
+  </figure>
+  <div class="footer-column">
+    <div class="footer-title">
+      <h5>Oficina Asesora de Tecnologías e Información</h5>
+    </div>
+  </div>
+
+  <div class="footer-logos">
+    @for (lista of social.list; track $index) {
+      <div class="social" >
+        <a href="{{lista.link}}">
+          <span class="material-icons">
+            {{lista.class}}
+          </span>
+        </a>
+        <div class="text-container">
+          @for (value of lista.value; track $index) {
+            <p>
+              {{ value }}
+            </p>
+          }
+        </div>
+      </div>
+    }
+    
+  </div>
+</div>
