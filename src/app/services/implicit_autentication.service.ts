@@ -38,27 +38,20 @@ export class ImplicitAutenticationService {
         });
     }
     init(entorno:any): any {
-        console.log("entorno",entorno);
         this.environment = entorno;
         const id_token = window.localStorage.getItem('id_token');
-        console.log('id_token',id_token)
         if (id_token === null) {
             var params: {[k: string]: any} = {}, queryString = location.hash.substring(1), regex = /([^&=]+)=([^&]*)/g;
             let m;
             while (m = regex.exec(queryString)) {
-                console.log('decodeURIComponent(m[1])',decodeURIComponent(m[1]))
-                console.log('decodeURIComponent(m[2])',decodeURIComponent(m[2]))
                 params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
             }
             // And send the token over to the server
             const req = new XMLHttpRequest();
             // consider using POST so query isn't logged
             const query = 'https://' + window.location.host + '?' + queryString;
-            console.log(query)
             req.open('GET', query, true);
-            console.log(params)
             if (!!params['id_token']) {
-                console.log(params['id_token'])
                 //if token setear
                 const id_token_array = (params['id_token']).split('.');
                 const payload = JSON.parse(atob(id_token_array[1]));
@@ -78,7 +71,6 @@ export class ImplicitAutenticationService {
                 //this.clearStorage();
             }
             req.onreadystatechange = function (e) {
-                console.log("toy cansado",e)
                 if (req.readyState === 4) {
                     if (req.status === 200) {
                         // window.location = params.state;
@@ -135,7 +127,6 @@ export class ImplicitAutenticationService {
     }
 
     public logout(action:any): void {
-        console.log('logout')
         const state = localStorage.getItem('state');
         const idToken = localStorage.getItem('id_token');
         if (!!state && !!idToken) {
@@ -160,7 +151,6 @@ export class ImplicitAutenticationService {
 
 
     public logoutValid() {
-        console.log('logoutvald')
         var state;
         var valid = true;
         var queryString = location.search.substring(1);
@@ -183,7 +173,6 @@ export class ImplicitAutenticationService {
         if (window.localStorage.getItem('id_token') === 'undefined' ||
             window.localStorage.getItem('id_token') === null || this.logoutValid()) {
             if (!flag) {
-                console.log("login pinche")
                 this.getAuthorizationUrl();
             }
             return false;
@@ -199,8 +188,6 @@ export class ImplicitAutenticationService {
 
     public getAuthorizationUrl() {
         this.params = this.environment;
-        console.log(this.environment)
-        console.log(this.params)
         if (!this.params.hasOwnProperty('nonce')) {
             const nonceData = this.generateState();
             this.params = { ...this.params, ...{ nonce: nonceData } };
@@ -219,7 +206,6 @@ export class ImplicitAutenticationService {
         }
         url += '&state=' + encodeURIComponent(this.params.state);
         window.location.replace(url);
-        console.log("url",url)
         return url;
     }
 
@@ -242,11 +228,9 @@ export class ImplicitAutenticationService {
     }
 
     autologout(expires:any): void {
-        console.log('autologout',expires)
         if (expires) {
             const expiresIn = ((new Date(expires)).getTime() - (new Date()).getTime());
             if (expiresIn < this.timeLogoutBefore) {
-                console.log('expiresin',expiresIn)
                 this.clearStorage();
                 this.logoutSubject.next('logout-auto-only-localstorage');
                 //location.reload();
@@ -278,7 +262,6 @@ export class ImplicitAutenticationService {
     }
 
     public clearStorage() {
-        console.log('clear')
         window.localStorage.removeItem('access_token');
         window.localStorage.removeItem('id_token');
         window.localStorage.removeItem('expires_in');
