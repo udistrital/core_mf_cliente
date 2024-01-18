@@ -11,8 +11,10 @@ import { NavItem } from '../interfaces/nav-item';
 import { MenuService } from '../services/menu.service';
 import { MenuComponent } from '../menu/menu.component';
 import { MatListModule } from '@angular/material/list';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 import { RouterLink } from '@angular/router';
+
+
 
 enum VisibilityState {
   Visible = 'visible',
@@ -23,7 +25,7 @@ enum VisibilityState {
   selector: 'ng-uui-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
-  imports: [MenuComponent, MatListModule, RouterLink, BrowserAnimationsModule],
+imports: [MenuComponent, MatListModule, RouterLink ],
   standalone: true,
   animations: [
     trigger('sidebarAnimation', [

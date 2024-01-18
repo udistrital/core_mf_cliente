@@ -5,6 +5,7 @@ import { MenuService } from '../services/menu.service';
 import { MenuAplicacionesService } from './../services/menuAplicaciones.service';
 import { MenuAplicacionesComponent } from '../menu-aplicaciones/menu-aplicaciones.component';
 
+
 enum VisibilityState {
   Visible = 'visible',
   Hidden = 'hidden'
@@ -14,7 +15,7 @@ enum VisibilityState {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone:true,
-  imports:[MenuAplicacionesComponent],
+  imports:[MenuAplicacionesComponent, ],
   encapsulation: ViewEncapsulation.Emulated,
   animations: [
     trigger('iconAnimation', [

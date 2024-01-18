@@ -6,12 +6,13 @@ import { MenuService } from './services/menu.service';
 import { OasComponent } from './oas/oas.component';
 import { mount } from '../main.single-spa';
 import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+
 
 @Component({
   selector: 'core-mf',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, OasComponent],
+  imports: [CommonModule, RouterOutlet, OasComponent,],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
