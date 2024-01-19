@@ -14,8 +14,6 @@ import { MatListModule } from '@angular/material/list';
 
 import { RouterLink } from '@angular/router';
 
-
-
 enum VisibilityState {
   Visible = 'visible',
   Hidden = 'hidden',
@@ -25,7 +23,7 @@ enum VisibilityState {
   selector: 'ng-uui-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
-imports: [MenuComponent, MatListModule, RouterLink ],
+  imports: [MenuComponent, MatListModule, RouterLink],
   standalone: true,
   animations: [
     trigger('sidebarAnimation', [

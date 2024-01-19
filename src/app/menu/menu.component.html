@@ -1,4 +1,4 @@
-<a mat-list-item (click)="onItemSelected(item)">
+<mat-list-item  (click)="onItemSelected(item)">
     <mat-icon [ngStyle]="{'padding-left': (depth * 5) + 'px'}" class="route-icon">
         {{item.Icono?item.Icono:depth>0?'bookmark':'bookmarks'}}
     </mat-icon>
@@ -11,12 +11,12 @@
     </span>
     }
 
-</a>
+</mat-list-item >
 @if (expanded) {
 <div>
     @for (
     child of item.Opciones; track $index) {
-    <ng-uui-menu  [item]="child" [depth]="depth!+1">
+    <ng-uui-menu  [item]="child" [depth]="depth+1">
     </ng-uui-menu>
     }
 

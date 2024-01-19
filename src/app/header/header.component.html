@@ -23,6 +23,13 @@
                 <span class="material-icons"> apps </span>
             </div>
         }
+        <mat-select #langSelect (change)="cambiarIdioma(langSelect.value)">
+            @for (lang of langs; track $index) {
+                <mat-option [value]="lang">
+                    {{ lang }}
+              </mat-option>
+            }
+       </mat-select>
 
         <div class="header-button-user-container" (click)="toogleCerrarSesion()">
             <span class="material-icons">

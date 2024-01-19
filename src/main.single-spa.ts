@@ -21,7 +21,7 @@ const lifecycles = singleSpaAngular({
     singleSpaPropsSubject.next(singleSpaProps);
     return bootstrapApplication(AppComponent, appConfig);
   },
-  template: '<core-mf />',
+  template: '<core-mf class="mat-typography" />',
   Router,
   NavigationStart,
   NgZone,

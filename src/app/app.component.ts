@@ -4,7 +4,6 @@ import { RouterOutlet } from '@angular/router';
 import { environment } from '../environments/environment';
 import { MenuService } from './services/menu.service';
 import { OasComponent } from './oas/oas.component';
-import { mount } from '../main.single-spa';
 import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 
 
