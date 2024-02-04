@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { environment } from '../environments/environment';
 import { MenuService } from './services/menu.service';
 import { OasComponent } from './oas/oas.component';
 import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
+import { fromEvent } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+import { getCookie } from './header/header.component';
 
 
 
@@ -15,12 +18,15 @@ import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
   opened: boolean = false;
   userData = { user: null, userService: null };
   environment = environment;
+  whatLang$ = fromEvent(window, 'lang');
 
-  constructor(private menuService: MenuService) {
+  constructor(
+    private menuService: MenuService,
+    private translate: TranslateService) {
     singleSpaPropsSubject.subscribe((props) => {
       this.environment = Object.assign(environment, props.environment);
     });
@@ -28,6 +34,10 @@ export class AppComponent {
     window.addEventListener('single-spa:before-routing-event', (event: any) => {
       const detail = event.detail;
     });
+  }
+
+  ngOnInit(): void {
+    this.validateLang()
   }
 
   userEvent(event: any) {
@@ -47,5 +57,14 @@ export class AppComponent {
     const { Url } = event;
     if (Url) {
     }
+  }
+
+  validateLang() {
+    let lang = getCookie('lang') || 'es';
+    this.whatLang$.subscribe((x:any) => {
+      lang = x['detail']['answer'];
+      this.translate.setDefaultLang(lang)
+    });
+    this.translate.setDefaultLang(getCookie('lang') || 'es');
   }
 }

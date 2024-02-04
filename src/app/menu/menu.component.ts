@@ -3,13 +3,14 @@ import { NavItem } from './../interfaces/nav-item';
 import { MenuService } from '../services/menu.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatIconModule} from '@angular/material/icon'
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'ng-uui-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
   standalone:true,
-  imports:[MatIconModule],
+  imports:[MatIconModule, TranslateModule],
   schemas:[NO_ERRORS_SCHEMA],
   animations: [
     trigger('indicatorRotate', [

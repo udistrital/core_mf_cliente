@@ -13,6 +13,7 @@ import { MenuComponent } from '../menu/menu.component';
 import { MatListModule } from '@angular/material/list';
 
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 enum VisibilityState {
   Visible = 'visible',
@@ -23,7 +24,7 @@ enum VisibilityState {
   selector: 'ng-uui-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
-  imports: [MenuComponent, MatListModule, RouterLink],
+  imports: [MenuComponent, MatListModule, RouterLink, TranslateModule],
   standalone: true,
   animations: [
     trigger('sidebarAnimation', [
