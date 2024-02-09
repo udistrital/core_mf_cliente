@@ -5,6 +5,7 @@
 @import url("https://pruebasassets.portaloas.udistrital.edu.co/urano-style.css");
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0");
+@import './styleP.scss';
 
 $primary: (
     50: var(--primary),
@@ -19425,10 +19426,6 @@ textarea.cdk-textarea-autosize-measuring {
 
 .mat-pseudo-checkbox-disabled {
     color: #b0b0b0
-}
-
-.mat-primary .mat-pseudo-checkbox-checked,.mat-primary .mat-pseudo-checkbox-indeterminate {
-    background: var(--primary)
 }
 
 .mat-accent .mat-pseudo-checkbox-checked,.mat-accent .mat-pseudo-checkbox-indeterminate,.mat-pseudo-checkbox-checked,.mat-pseudo-checkbox-indeterminate {

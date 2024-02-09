@@ -1,0 +1,49 @@
+//para notificaciones tipo toast
+.mat-mdc-snack-bar-container {
+    &.info-snackbar {
+        --mdc-snackbar-container-color: #fecc4d;
+        --mat-mdc-snack-bar-button-color: #451702;
+        --mdc-snackbar-supporting-text-color: #451702;
+    }
+}
+
+.mat-mdc-snack-bar-container {
+    &.error-snackbar {
+        --mdc-snackbar-container-color: #e15a52;
+        --mat-mdc-snack-bar-button-color: #fdf4f3;
+        --mdc-snackbar-supporting-text-color: #fdf4f3;
+    }
+}
+
+.mat-mdc-snack-bar-container {
+    &.success-snackbar {
+        --mdc-snackbar-container-color: #72b771;
+        --mat-mdc-snack-bar-button-color: #fff;
+        --mdc-snackbar-supporting-text-color: #fff;
+    }
+}
+
+.mat-mdc-snack-bar-container .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled) {
+    color: #fff !important;
+    --mat-mdc-button-persistent-ripple-color: #eeeeee !important;
+}
+
+.mat-mdc-snack-bar-container .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled):hover {
+    color: #000 !important;
+}
+
+//para parrafos de info
+.info {
+    background-color: #f6f2cf;
+    border-radius: 5px;
+    border: solid 1px #ddc342;
+    display: flex;
+    align-items: center;
+    color: #3c220c;
+    padding: 1.0rem;
+}
+
+.info-icon {
+    padding-right: 30px;
+    color: #ad9930;
+}
