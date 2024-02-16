@@ -44,3 +44,37 @@
         width: 75vw;
     }
 }
+
+.item-content {
+    display: flex;
+    align-items: center; /* Alinear verticalmente el contenido del ítem */
+    justify-content: space-between;
+    margin-top: 13px; /* Agrega más espacio arriba del ítem */
+    margin-bottom: 13px; /* Agrega más espacio debajo del ítem */
+    transition: all 1s; /* Agrega transición para el hover */
+}
+
+
+.arrow-container {
+    display: flex;
+    align-items: center; /* Alinear verticalmente las flechas */
+}
+
+.sub-menu {
+    padding-left: 20px; /* Ajusta este valor según sea necesario */
+    position: relative; /* Agrega posición relativa para que los íconos de flecha se posicionen correctamente */
+}
+
+
+.left {
+    display: flex;
+    align-items: left; /* Alinear verticalmente el contenido del ítem */
+    justify-content: space-between;
+}
+
+.separator {
+    width: 100%;
+    height: 1px;
+    background-color: white;
+    margin: 5px 0;
+}

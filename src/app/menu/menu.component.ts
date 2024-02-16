@@ -14,11 +14,16 @@ import { TranslateModule } from '@ngx-translate/core';
   schemas:[NO_ERRORS_SCHEMA],
   animations: [
     trigger('indicatorRotate', [
-      state('collapsed', style({transform: 'rotate(0deg)'})),
-      state('expanded', style({transform: 'rotate(180deg)'})),
+      state('collapsed', style({transform: 'rotate(90deg)'})),
+      state('expanded', style({transform: 'rotate(0deg)'})),
       transition('expanded <=> collapsed',
         animate('125ms cubic-bezier(0.4,0.0,0.2,1)')
       ),
+    ]),
+    trigger('slideDown', [
+      state('void', style({ transform: 'translateY(-10%)', opacity: 0 })),
+      state('*', style({ transform: 'translateY(0)', opacity: 1 })),
+      transition('void => *', animate('400ms ease-in-out')),
     ])
   ]
 })
