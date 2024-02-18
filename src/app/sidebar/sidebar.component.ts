@@ -29,11 +29,11 @@ enum VisibilityState {
   animations: [
     trigger('sidebarAnimation', [
       state(
-        VisibilityState.Visible,
+        VisibilityState.Hidden,
         style({ transform: 'scaleX(0.5) translate(-200%)' })
       ),
       state(
-        VisibilityState.Hidden,
+        VisibilityState.Visible,
         style({ transform: 'scaleX(1) translate(-0.1%)' })
       ),
       transition('* => *', animate('400ms ease-in')),
@@ -41,7 +41,7 @@ enum VisibilityState {
   ],
 })
 export class SidebarComponent implements OnInit {
-  sidebarAnimation: VisibilityState = VisibilityState.Hidden;
+  sidebarAnimation: VisibilityState = VisibilityState.Visible;
   @Input() navItems: NavItem[] = [];
   @Input() appMenu: string = '';
 
