@@ -41,7 +41,7 @@ enum VisibilityState {
   ],
 })
 export class SidebarComponent implements OnInit {
-  sidebarAnimation: VisibilityState = VisibilityState.Hidden;
+  sidebarAnimation: VisibilityState = VisibilityState.Visible;
   @Input() navItems: NavItem[] = [];
   @Input() appMenu: string = '';
 

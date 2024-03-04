@@ -9,7 +9,7 @@
     -webkit-border-radius: 2px;
     left: -0.04vw;
     border-radius: 2px;
-    height: calc(-181px + 100vh);
+    height: calc(-165px + 100vh);
     width: auto;
     padding-top: 10px;
     z-index: 1;
@@ -18,36 +18,21 @@
     flex-wrap: nowrap;
 }
 
-.sidebar-container::-webkit-scrollbar-track {
-    background: var(--primary);
-}
-.sidebar-container::-webkit-scrollbar-thumb {
-    background-color: var(--color-100) ;
-    border-radius: 6px;
-    border: 3px solid var(--primary);
-}
-
-.sidebar-container {
-    scrollbar-width: thin;
-    scrollbar-color: var(primary) var(color-100);
-}
-
-/* Works on Chrome, Edge, and Safari */
 .sidebar-container::-webkit-scrollbar {
-    width: 12px;
+    width: 12px;               
 }
-
+  
 .sidebar-container::-webkit-scrollbar-track {
-    background: var(color-100);
+    background: var(--primary);        /* color of the tracking area */
 }
-
+  
 .sidebar-container::-webkit-scrollbar-thumb {
-    background-color: var(primary);
-    border-radius: 20px;
-    border: 3px solid var(color-100);
+background-color: #0a678b;    /* color of the scroll thumb */
+border-radius: 20px;       /* roundness of the scroll thumb */
+border: 2.3px solid #84cdeb;   /* creates padding around scroll thumb */
 }
 
-@media screen and (max-width: 425px) {
+@media screen and (max-width: 70px) {
     .sidebar-container {
         width: 100%;
     }
