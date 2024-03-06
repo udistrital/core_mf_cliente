@@ -22,14 +22,14 @@ export class MenuService {
     private configuracionService: ConfiguracionService,
     private userService: ImplicitAutenticationService
   ) {
-    this.openNav();
     fromEvent<KeyboardEvent>(document, 'mouseup').subscribe((data:KeyboardEvent) => {
-        console.log(this.sidebar)
         if (this.sidebar) {
-          if ((data.composedPath().map((info: any) => (info.localName))
-                .filter((dataFilter: any) => (dataFilter === 'ng-uui-sidebar'))).length === 0) {
-            this.closeNav();
-          }
+            if ((
+                data.composedPath()
+                    .map((info: any) => (info.localName))
+                    .filter((dataFilter: any) => (dataFilter === 'ng-uui-sidebar'))).length === 0) {
+                this.closeNav();
+            }
         }
     });
   }
@@ -104,10 +104,7 @@ export class MenuService {
   }
 
   public toogle() {
-    if (this.sidebar) {
-      this.closeNav();
-    } else {
-      this.openNav();
-    }
+    this.sidebar = !this.sidebar;
+    this.sidebarSubject.next(this.sidebar);
   }
 }

@@ -256,6 +256,19 @@ export class ImplicitAutenticationService {
             }
         }
     }
+
+    getDocument() {
+        const rolePromise = new Promise((resolve, reject) => {
+            this.user$.subscribe((data: any) => {
+                if (data && data.userService && data.userService.documento) {
+                    resolve(data.userService.documento);
+                }
+            });
+        });
+        return rolePromise;
+    }
+    
+    
     public expired() {
         var expires_at=window.localStorage.getItem('expires_at')
         return (new Date(expires_at!=null?expires_at:new Date())) < new Date();

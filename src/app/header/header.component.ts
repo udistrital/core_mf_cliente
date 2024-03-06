@@ -20,6 +20,7 @@ import { MenuAplicacionesService } from './../services/menuAplicaciones.service'
 import { MenuAplicacionesComponent } from '../menu-aplicaciones/menu-aplicaciones.component';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSelectModule} from '@angular/material/select'
+import { UserService } from '../services/users.service';
 
 enum VisibilityState {
   Visible = 'visible',
@@ -82,7 +83,8 @@ export class HeaderComponent implements OnChanges {
     private cdr: ChangeDetectorRef,
     private menuService: MenuService,
     public menuAplicacionesService: MenuAplicacionesService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private userService: UserService
   ) {
     this.validateLang()
     menuService.sidebar$.subscribe((data) => (this.sidebar = data));
@@ -119,12 +121,12 @@ export class HeaderComponent implements OnChanges {
   }
 
   validateLang() {
-    let lang = getCookie('lang') || 'en';
+    let lang = getCookie('lang') || 'es';
     this.whatLang$.subscribe((x:any) => {
       lang = x['detail']['answer'];
       this.translate.setDefaultLang(lang)
     });
-    this.translate.setDefaultLang(getCookie('lang') || 'en');
+    this.translate.setDefaultLang(getCookie('lang') || 'es');
   }
 
   sidebarClases = {
