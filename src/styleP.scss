@@ -51,3 +51,14 @@
     padding-right: 30px;
     color: #ad9930;
 }
+
+// swal de color institucional 
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+    border: 0;
+    border-radius: 0.25em;
+    background: initial;
+    background-color: #03678f !important;
+    color: #fff;
+    font-size: 1em;
+  }
