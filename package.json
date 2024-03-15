@@ -8,7 +8,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build:single-spa:core-mf": "ng build core-mf --configuration production",
-    "serve:single-spa:core-mf": "ng s --project core-mf --disable-host-check --port 4201 --live-reload false"
+    "serve:single-spa:core-mf": "ng s --project core-mf --disable-host-check --port 4201 --live-reload false",
+    "build:prod": "npm run build --aot --configuration=production",
+    "build:test": "npm run build --aot --configuration=development"
   },
   "private": true,
   "dependencies": {
@@ -35,7 +37,7 @@
   "devDependencies": {
     "@angular-builders/custom-webpack": "17.0.0",
     "@angular-devkit/build-angular": "^17.0.8",
-    "@angular/cli": "^17.0.8",
+    "@angular/cli": "^16.2.12",
     "@angular/compiler-cli": "^17.0.0",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.1.0",
