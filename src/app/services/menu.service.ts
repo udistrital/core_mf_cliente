@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, fromEvent } from 'rxjs';
 import { ConfiguracionService } from './configuracion.service';
 import { ImplicitAutenticationService } from './implicit_autentication.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,8 @@ export class MenuService {
 
   constructor(
     private configuracionService: ConfiguracionService,
-    private userService: ImplicitAutenticationService
+    private userService: ImplicitAutenticationService,
+    private router: Router,
   ) {
     fromEvent<KeyboardEvent>(document, 'mouseup').subscribe((data:KeyboardEvent) => {
         if (this.sidebar) {
@@ -106,5 +108,9 @@ export class MenuService {
   public toogle() {
     this.sidebar = !this.sidebar;
     this.sidebarSubject.next(this.sidebar);
+  }
+
+  public goTo(url: string) {
+    this.router.navigate([url]);
   }
 }

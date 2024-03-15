@@ -44,6 +44,7 @@ export class MenuComponent{
     if (!item.Opciones || !item.Opciones.length) {
       this.navService.updateOption(item);
       this.navService.closeNav();
+      this.navService.goTo(item.Url?.replace('/pages', '')||'')
     }
     if (item.Opciones && item.Opciones.length) {
       this.expanded = !this.expanded;
