@@ -8,9 +8,10 @@ import { getSingleSpaExtraProviders } from 'single-spa-angular';
 import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { environment } from '../environments/environment';
 
 export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, 'http://localhost:4201/assets/i18n/', '.json');
+  return new TranslateHttpLoader(http, environment.apiUrl + 'assets/i18n/', '.json');
 }
 
 export const appConfig: ApplicationConfig = {

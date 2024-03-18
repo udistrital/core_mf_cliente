@@ -28,6 +28,7 @@ export class AppComponent implements OnInit{
     private menuService: MenuService,
     private translate: TranslateService) {
     singleSpaPropsSubject.subscribe((props) => {
+      // TODO: Ver la manera de usar esta info que viene del root
       this.environment = Object.assign(environment, props.environment);
     });
     this.menuService.sidebar$.subscribe((opened) => (this.opened = opened));
