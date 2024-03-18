@@ -15,5 +15,5 @@ export const environment = {
     AUTENTICACION_MID: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/autenticacion_mid/v1/token/userRol',
   },
   TERCEROS_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/terceros_crud/v1/',
-  apiUrl: 'http://localhost:4201',
+  apiUrl: 'http://localhost:4201/',
 };
