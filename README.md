@@ -10,7 +10,7 @@ Cliente para la gestión del core, parte del Sistema de Gestión Académica. Est
   - Incluye Animations, Common, Compiler, Core, Forms, Platform-Browser, Platform-Browser-Dynamic, Router
 - [Angular Material](https://material.angular.io/) 17.0.5
 - [Angular CDK](https://material.angular.io/cdk/categories) 17.0.5
-- [ngx-translate](http://www.ngx-translate.com/) 15.0.0
+- [ngx-translate](https://github.com/ngx-translate/core) 15.0.0
   - Incluye ngx-translate Http Loader
 - [RxJS](https://rxjs.dev/guide/overview) ~7.8.0
 - [Single-spa](https://single-spa.js.org/) >=4.0.0
