@@ -52,11 +52,18 @@
     display: flex;
     align-items: center; /* Alinear verticalmente el contenido del ítem */
     justify-content: space-between;
-    //margin-top: 13px; /* Agrega más espacio arriba del ítem */
-    margin-bottom: 13px; /* Agrega más espacio debajo del ítem */
+    padding-bottom: 0.5rem; /* Ajusta este valor según sea necesario */
+    padding-top: 0.5rem; /* Ajusta este valor según sea necesario */
     transition: all 1s; /* Agrega transición para el hover */
     padding-left: 1rem;
     width: 20rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.item-content:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
     cursor: pointer;
 }
 
