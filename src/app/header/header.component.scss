@@ -27,6 +27,7 @@ p {
     cursor: pointer;
 }
 
+
 .menu-app-info {
     border: none;
 }
@@ -58,6 +59,22 @@ i {
     justify-content: center;
     
 }
+
+.header-logo-container a {
+    display: flex; /* o 'block', dependiendo de tus necesidades */
+    justify-content: center;
+    align-items: center;
+    width: 200px; /* o un valor específico, si quieres un ancho fijo */
+    height: auto; /* o un valor específico, si quieres un alto fijo */
+    text-decoration: none; /* para eliminar el subrayado del enlace */
+}
+
+.header-logo-container img {
+    display: block; /* para evitar espacio extra debajo de la imagen */
+    max-width: 100%; /* para asegurarse de que la imagen sea responsiva */
+    height: auto; /* para mantener la proporción de la imagen */
+}
+
 
 .header-buttons-container {
     display: flex;
