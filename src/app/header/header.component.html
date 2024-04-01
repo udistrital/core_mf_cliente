@@ -1,46 +1,50 @@
 <div class="header-container">
-    @if (sidebar) {
-        <div class="menu-icon" (click)="closeSidebar()">
-            <span class="material-icons">
-                menu_open
-            </span>
-        </div>
-    }
-    @else {
-        <div class="menu-icon" (click)="openSidebar()">
-            <span class="material-icons">
-                menu
-            </span>
-        </div>
-    }
-    <div class="header-logo-container">
-        <img src="{{appname?basePathAssets + 'logotipos_aplicativos_svg/' + appname + '.svg':''}}"
-        alt="{{'logotipo aplicación ' + appname}}" class="logotipo"/>
+  @if (sidebar) {
+  <div class="menu-icon" (click)="closeSidebar()">
+    <span class="material-icons"> menu_open </span>
+  </div>
+  } @else {
+  <div class="menu-icon" (click)="openSidebar()">
+    <span class="material-icons"> menu </span>
+  </div>
+  }
+  <div class="header-logo-container">
+    <img
+      src="{{
+        appname
+          ? basePathAssets + 'logotipos_aplicativos_svg/' + appname + '.svg'
+          : ''
+      }}"
+      alt="{{ 'logotipo aplicación ' + appname }}"
+      class="logotipo"
+    />
+  </div>
+  <div class="header-buttons-container">
+    @if (menuApps) {
+    <div class="header-button-apps-container" (click)="toogleAplicaciones()">
+      <span class="material-icons"> apps </span>
     </div>
-    <div class="header-buttons-container">
-        @if (menuApps) {
-            <div class="header-button-apps-container" (click)="toogleAplicaciones()">
-                <span class="material-icons"> apps </span>
-            </div>
-        }
-        <mat-select #langSelect (change)="cambiarIdioma(langSelect.value)">
-            @for (lang of langs; track $index) {
-                <mat-option [value]="lang">
-                    {{ lang }}
-              </mat-option>
-            }
-       </mat-select>
+    }
+    <mat-select
+      #langSelect
+      [(value)]="langCookie"
+      (change)="cambiarIdioma(langSelect.value)"
+    >
+      @for (lang of langs; track $index) {
+      <mat-option [value]="lang">
+        {{ lang }}
+      </mat-option>
+      }
+    </mat-select>
 
-        <div class="header-button-user-container" (click)="toogleCerrarSesion()">
-            <span class="material-icons">
-                account_circle
-            </span>
-            <p class="user-info">{{username}}</p>
-            <div id="header-button-cerrarsesion-container" (click)='logout()'>
-                <p>Cerrar sesión</p>
-            </div>
-        </div>
+    <div class="header-button-user-container" (click)="toogleCerrarSesion()">
+      <span class="material-icons"> account_circle </span>
+      <p class="user-info">{{ username }}</p>
+      <div id="header-button-cerrarsesion-container" (click)="logout()">
+        <p>Cerrar sesión</p>
+      </div>
     </div>
+  </div>
 </div>
 <!-- <ng-uui-menu-aplicaciones></ng-uui-menu-aplicaciones> -->
 <!-- <ng-uui-load [hidden]="!load"></ng-uui-load> -->
