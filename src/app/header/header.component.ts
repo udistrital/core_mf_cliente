@@ -107,6 +107,9 @@ export class HeaderComponent implements OnChanges {
         }
       }
     });
+    this.langCookie = getCookie('lang') || 'es';
+    this.translate.setDefaultLang(this.langCookie);
+    this.cdr.detectChanges();
   }
 
   cambiarIdioma(lang: string) {
