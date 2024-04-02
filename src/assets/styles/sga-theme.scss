@@ -111,7 +111,9 @@ $light-theme: mat.define-light-theme(
             accent: mat.define-palette($md-accent, 500),
             warn: mat.define-palette($md-warning, 500),
         ),
-        typography: mat.define-typography-config(),
+        typography: mat.define-typography-config(
+            $font-family: 'Open Sans',
+        ),
         desity: 0,
     )
 );
