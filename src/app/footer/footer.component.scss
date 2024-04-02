@@ -2,9 +2,10 @@
 
 #footer {
     width: 100%;
+    position: relative;
 }
 
-.footer-div{
+.footer-div {
     background-color: white;
     color: var(--primary);
     max-height: 74px;
@@ -13,13 +14,10 @@
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    margin-top:1%;
+    margin-top: 1%;
     box-shadow: 0 0.5rem 1rem 1rem rgba(44,51,73,0.1);
-    position: fixed;
-    bottom: 0;
-    left: 0;
     z-index: 1;
-}
+  }
 
 .container-footer {
     width: 100%;
