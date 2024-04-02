@@ -14,8 +14,10 @@
         </div>
     }
     <div class="header-logo-container">
-        <img src="{{appname?basePathAssets + 'logotipos_aplicativos_svg/' + appname + '.svg':''}}"
-        alt="{{'logotipo aplicación ' + appname}}" class="logotipo"/>
+        <a [routerLink]="['/']">
+            <img [src]="appname ? basePathAssets + 'logotipos_aplicativos_svg/' + appname + '.svg' : ''"
+                 [alt]="'logotipo aplicación ' + appname" class="logotipo"/>
+        </a>
     </div>
     <div class="header-buttons-container">
         @if (menuApps) {

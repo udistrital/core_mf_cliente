@@ -2,7 +2,7 @@
     <div class="item-content"> <!-- Contenedor para alinear verticalmente -->
         <div class="left">
             <mat-icon [ngStyle]="{'padding-left': (depth * 5) + 'px'}" class="route-icon">
-                {{item.Icono?item.Icono:depth>0?'bookmark':'bookmarks'}}
+                {{item.Icono?item.Icono:depth>0?'view_stream':'view_list'}}
             </mat-icon>
             
             <span class="display-name">{{item.Nombre | translate}}</span> 
