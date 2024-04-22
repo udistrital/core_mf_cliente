@@ -32,6 +32,7 @@ export class AppComponent implements OnInit {
       // TODO: Ver la manera de usar esta info que viene del root
       this.environment = Object.assign(environment, props.environment);
     });
+    console.log("ENVIRONMENTS", environment)
     this.menuService.sidebar$.subscribe((opened) => (this.opened = opened));
     window.addEventListener('single-spa:before-routing-event', (event: any) => {
       const detail = event.detail;

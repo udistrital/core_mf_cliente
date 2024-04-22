@@ -14,12 +14,13 @@ import {
   EventEmitter,
   OnChanges,
 } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { MenuService } from '../services/menu.service';
 import { MenuAplicacionesService } from './../services/menuAplicaciones.service';
 import { MenuAplicacionesComponent } from '../menu-aplicaciones/menu-aplicaciones.component';
 import { TranslateService } from '@ngx-translate/core';
-import { MatSelectModule} from '@angular/material/select'
+import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '../services/users.service';
 
 enum VisibilityState {
@@ -31,7 +32,7 @@ enum VisibilityState {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [MenuAplicacionesComponent,MatSelectModule],
+  imports: [MenuAplicacionesComponent, MatSelectModule, RouterModule],
   encapsulation: ViewEncapsulation.Emulated,
   animations: [
     trigger('iconAnimation', [
@@ -86,7 +87,7 @@ export class HeaderComponent implements OnChanges {
     private translate: TranslateService,
     private userService: UserService
   ) {
-    this.validateLang()
+    this.validateLang();
     menuService.sidebar$.subscribe((data) => (this.sidebar = data));
   }
 
@@ -113,21 +114,21 @@ export class HeaderComponent implements OnChanges {
   }
 
   cambiarIdioma(lang: string) {
-    this.langCookie = lang
+    this.langCookie = lang;
     setCookie('lang', this.langCookie);
-    let event = new CustomEvent('lang',{
-      detail:{
-        answer: lang
-      }
-    })
-    window.dispatchEvent(event)
+    let event = new CustomEvent('lang', {
+      detail: {
+        answer: lang,
+      },
+    });
+    window.dispatchEvent(event);
   }
 
   validateLang() {
     let lang = getCookie('lang') || 'es';
-    this.whatLang$.subscribe((x:any) => {
+    this.whatLang$.subscribe((x: any) => {
       lang = x['detail']['answer'];
-      this.translate.setDefaultLang(lang)
+      this.translate.setDefaultLang(lang);
     });
     this.translate.setDefaultLang(getCookie('lang') || 'es');
   }
@@ -203,11 +204,11 @@ export function setCookie(name: string, val: string) {
 }
 
 export function getCookie(name: string): string | undefined {
-    const value = '; ' + document.cookie;
-    const parts = value.split('; ' + name + '=');
-  
-    if (parts.length == 2) {
-      return parts.pop()?.split(';').shift();
-    }
-    return undefined
+  const value = '; ' + document.cookie;
+  const parts = value.split('; ' + name + '=');
+
+  if (parts.length == 2) {
+    return parts.pop()?.split(';').shift();
   }
+  return undefined;
+}
