@@ -147,3 +147,4 @@ core_mf_cliente is free software: you can redistribute it and/or modify it under
 core_mf_cliente is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with core_mf_cliente. If not, see https://www.gnu.org/licenses/.
+
