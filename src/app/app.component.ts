@@ -8,17 +8,16 @@ import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 import { fromEvent } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { getCookie } from './header/header.component';
-
-
+import { ControlSizeContainerService } from './services/controlSizeContainer.service';
 
 @Component({
   selector: 'core-mf',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, OasComponent,],
+  imports: [CommonModule, RouterOutlet, OasComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit {
   opened: boolean = false;
   userData = { user: null, userService: null };
   environment = environment;
@@ -26,11 +25,14 @@ export class AppComponent implements OnInit{
 
   constructor(
     private menuService: MenuService,
-    private translate: TranslateService) {
+    private controlSizeContainerService: ControlSizeContainerService,
+    private translate: TranslateService
+  ) {
     singleSpaPropsSubject.subscribe((props) => {
       // TODO: Ver la manera de usar esta info que viene del root
       this.environment = Object.assign(environment, props.environment);
     });
+    console.log("ENVIRONMENTS", environment)
     this.menuService.sidebar$.subscribe((opened) => (this.opened = opened));
     window.addEventListener('single-spa:before-routing-event', (event: any) => {
       const detail = event.detail;
@@ -38,7 +40,7 @@ export class AppComponent implements OnInit{
   }
 
   ngOnInit(): void {
-    this.validateLang()
+    this.validateLang();
   }
 
   userEvent(event: any) {
@@ -62,10 +64,14 @@ export class AppComponent implements OnInit{
 
   validateLang() {
     let lang = getCookie('lang') || 'es';
-    this.whatLang$.subscribe((x:any) => {
+    this.whatLang$.subscribe((x: any) => {
       lang = x['detail']['answer'];
-      this.translate.setDefaultLang(lang)
+      this.translate.setDefaultLang(lang);
     });
     this.translate.setDefaultLang(getCookie('lang') || 'es');
+  }
+
+  ngOnDestroy(): void {
+    this.controlSizeContainerService.cleanup();
   }
 }

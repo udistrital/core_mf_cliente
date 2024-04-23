@@ -30,6 +30,10 @@
               "src/assets"
             ],
             "styles": [
+              "src/assets/styles/sga-global.scss",
+              "src/assets/styles/sga-form.scss",
+              "src/assets/styles/sga-text.scss",
+              "src/assets/styles/sga-theme.scss",
               "src/styles.scss"
             ],
             "scripts": [
@@ -97,7 +101,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "core-mf:build"
+            "buildTarget": "core-mf:build"
           }
         },
         "test": {

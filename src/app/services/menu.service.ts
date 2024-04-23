@@ -24,16 +24,21 @@ export class MenuService {
     private userService: ImplicitAutenticationService,
     private router: Router,
   ) {
-    fromEvent<KeyboardEvent>(document, 'mouseup').subscribe((data:KeyboardEvent) => {
+    fromEvent<KeyboardEvent>(document, 'mouseup').subscribe(
+      (data: KeyboardEvent) => {
         if (this.sidebar) {
-            if ((
-                data.composedPath()
-                    .map((info: any) => (info.localName))
-                    .filter((dataFilter: any) => (dataFilter === 'ng-uui-sidebar'))).length === 0) {
-                this.closeNav();
-            }
+          if (
+            data
+              .composedPath()
+              .map((info: any) => info.localName)
+              .filter((dataFilter: any) => dataFilter === 'ng-uui-sidebar')
+              .length === 0
+          ) {
+            this.closeNav();
+          }
         }
-    });
+      }
+    );
   }
 
   getMenu(appMenu: string) {

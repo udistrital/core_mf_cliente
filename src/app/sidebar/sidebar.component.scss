@@ -1,7 +1,7 @@
 .sidebar-container {
     background: var(--primary);
-    border: 1px solid #d6dae1;
-    color: white;
+    border: 1px solid var(--color200);
+    color: var(--color100);
     -webkit-box-shadow: 0 2px 10px rgba(48, 90, 208, 0.2);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     position: fixed;
@@ -9,13 +9,15 @@
     -webkit-border-radius: 2px;
     left: -0.04vw;
     border-radius: 2px;
-    height: calc(-165px + 100vh);
+    height: calc(-93px + 100vh);
     width: auto;
     padding-top: 10px;
     z-index: 1;
     display: flex;
     overflow-y: scroll;
     flex-wrap: nowrap;
+    z-index: 99;
+    font-family:  'Raleway', sans-serif;
 }
 
 .sidebar-container::-webkit-scrollbar {
@@ -27,9 +29,9 @@
 }
   
 .sidebar-container::-webkit-scrollbar-thumb {
-background-color: #0a678b;    /* color of the scroll thumb */
+background-color: var(--color100);    /* color of the scroll thumb */
 border-radius: 20px;       /* roundness of the scroll thumb */
-border: 2.3px solid #84cdeb;   /* creates padding around scroll thumb */
+border: 2.3px solid var(--color100);   /* creates padding around scroll thumb */
 }
 
 @media screen and (max-width: 70px) {

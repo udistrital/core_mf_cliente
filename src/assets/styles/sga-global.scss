@@ -1,0 +1,28 @@
+.margin-y {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.container-bottons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.table {
+    overflow-x: auto;
+}
+
+.info {
+    background-color: var(--warning-main);
+    border-radius: 5px;
+    border: solid 1px var(--warning-accent);
+    display: flex;
+    align-items: center;
+    padding: 1em;
+    gap: 1em;
+}
+
+td th tr {
+    border: solid 1px black;
+}

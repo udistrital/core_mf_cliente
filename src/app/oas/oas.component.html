@@ -1,11 +1,20 @@
-<ng-uui-header [appname]="appname" [username]="username" [notificaciones]="notificaciones" [menuApps]="menuApps"
-    (logoutEvent)="logoutEvent()"></ng-uui-header>
 @if (!isLogin) {
-<ng-uui-login [appname]="appname" [isloading]="isloading" (loginEvent)="loginEvent()"></ng-uui-login>
+    <ng-uui-login
+    [appname]="appname"
+    [isloading]="isloading"
+    (loginEvent)="loginEvent()"
+    ></ng-uui-login>
 }@else {
-    <div >
-        <ng-uui-sidebar [appMenu]="appMenu" [navItems]="navItems"></ng-uui-sidebar>
-    </div>
-    <ng-uui-footer ></ng-uui-footer>
+    <ng-uui-header
+        [appname]="appname"
+        [username]="username"
+        [notificaciones]="notificaciones"
+        [menuApps]="menuApps"
+        (logoutEvent)="logoutEvent()"
+    ></ng-uui-header>
+    <ng-uui-sidebar 
+        [appMenu]="appMenu" 
+        [navItems]="navItems">
+    </ng-uui-sidebar>
+    <ng-uui-footer></ng-uui-footer>
 }
-
