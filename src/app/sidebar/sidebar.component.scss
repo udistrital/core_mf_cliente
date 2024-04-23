@@ -9,13 +9,15 @@
     -webkit-border-radius: 2px;
     left: -0.04vw;
     border-radius: 2px;
-    height: calc(-165px + 100vh);
+    height: calc(-93px + 100vh);
     width: auto;
     padding-top: 10px;
     z-index: 1;
     display: flex;
     overflow-y: scroll;
     flex-wrap: nowrap;
+    z-index: 99;
+    font-family:  'Raleway', sans-serif;
 }
 
 .sidebar-container::-webkit-scrollbar {

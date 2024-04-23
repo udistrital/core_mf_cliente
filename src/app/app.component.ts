@@ -8,6 +8,7 @@ import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 import { fromEvent } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { getCookie } from './header/header.component';
+import { ControlSizeContainerService } from './services/controlSizeContainer.service';
 
 @Component({
   selector: 'core-mf',
@@ -24,6 +25,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private menuService: MenuService,
+    private controlSizeContainerService: ControlSizeContainerService,
     private translate: TranslateService
   ) {
     singleSpaPropsSubject.subscribe((props) => {
@@ -67,5 +69,9 @@ export class AppComponent implements OnInit {
       this.translate.setDefaultLang(lang);
     });
     this.translate.setDefaultLang(getCookie('lang') || 'es');
+  }
+
+  ngOnDestroy(): void {
+    this.controlSizeContainerService.cleanup();
   }
 }
