@@ -101,7 +101,7 @@ steps:
 - name: publish_s3_release
   image: plugins/s3
   settings:
-    bucket: cliente-pruebas
+    bucket: cliente-core-pruebas
     access_key:
       from_secret: aws_access_key_id
     secret_key:
