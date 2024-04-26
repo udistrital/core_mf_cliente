@@ -106,7 +106,7 @@ export class OasComponent implements OnChanges {
             this.isloading = true;
           } else {
             this.isLogin = false;
-            // setTimeout(() => { this.isloading ? this.isloading = false : this.isloading = true }, 2500)
+            setTimeout(() => { this.isloading ? this.isloading = false : this.isloading = true }, 2500)
           }
         }, 100);
       } else {
