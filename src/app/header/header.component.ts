@@ -76,7 +76,7 @@ export class HeaderComponent implements OnChanges {
   cerrarSesion: boolean = false;
 
   langs: string[] = ['es', 'en']; // idiomas que va a soportar nuestra aplicacion
-  langCookie: string = 'es';
+  langCookie: string = 'en';
 
   whatLang$ = fromEvent(window, 'lang');
 
@@ -108,12 +108,13 @@ export class HeaderComponent implements OnChanges {
         }
       }
     });
-    this.langCookie = getCookie('lang') || 'es';
+    this.langCookie = getCookie('lang') || 'en';
     this.translate.setDefaultLang(this.langCookie);
     this.cdr.detectChanges();
   }
 
   cambiarIdioma(lang: string) {
+    //console.log("cookie lang",lang)
     this.langCookie = lang;
     setCookie('lang', this.langCookie);
     let event = new CustomEvent('lang', {
@@ -122,6 +123,7 @@ export class HeaderComponent implements OnChanges {
       },
     });
     window.dispatchEvent(event);
+    //console.log("cookie lang",this.langCookie)
   }
 
   validateLang() {
@@ -129,7 +131,9 @@ export class HeaderComponent implements OnChanges {
     this.whatLang$.subscribe((x: any) => {
       lang = x['detail']['answer'];
       this.translate.setDefaultLang(lang);
+      //console.log("cookie lang",this.langCookie)
     });
+
     this.translate.setDefaultLang(getCookie('lang') || 'es');
   }
 
