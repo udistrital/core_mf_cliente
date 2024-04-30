@@ -4,7 +4,7 @@ import { throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
-const httpOptions = {
+let httpOptions = {
     headers: new HttpHeaders({
         'Accept': 'application/json',
     }),
@@ -17,6 +17,15 @@ const httpOptions = {
 export class AnyService {
 
     constructor(private http: HttpClient) {
+      const acces_token = window.localStorage.getItem('access_token');
+      if (acces_token !== null) {
+        httpOptions = {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${acces_token}`,
+          }),
+        }
+      }
     }
 
     get(path: any, endpoint: any) {
