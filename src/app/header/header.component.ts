@@ -108,13 +108,12 @@ export class HeaderComponent implements OnChanges {
         }
       }
     });
-    this.langCookie = getCookie('lang') || 'en';
+    this.langCookie = getCookie('lang') || 'es';
     this.translate.setDefaultLang(this.langCookie);
     this.cdr.detectChanges();
   }
 
   cambiarIdioma(lang: string) {
-    //console.log("cookie lang",lang)
     this.langCookie = lang;
     setCookie('lang', this.langCookie);
     let event = new CustomEvent('lang', {
@@ -131,10 +130,8 @@ export class HeaderComponent implements OnChanges {
     this.whatLang$.subscribe((x: any) => {
       lang = x['detail']['answer'];
       this.translate.setDefaultLang(lang);
-      //console.log("cookie lang",this.langCookie)
     });
-
-    this.translate.setDefaultLang(getCookie('lang') || 'es');
+    this.translate.setDefaultLang(lang);
   }
 
   sidebarClases = {
