@@ -25,7 +25,7 @@
             <span class="material-icons"> apps </span>
         </div>
         }
-        <mat-select #langSelect (selectionChange)="cambiarIdioma(langSelect.value)">
+        <mat-select #langSelect [(value)]="langCookie" (selectionChange)="cambiarIdioma(langSelect.value)">
             @for (lang of langs; track $index) {
             <mat-option [value]="lang">
                 {{ lang }}
