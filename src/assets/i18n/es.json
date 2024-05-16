@@ -82,5 +82,9 @@
   "horarios-grupos": "Horarios por grupos",
   "gestion-horario": "Gestión de horario",
   "crud_enfasis":"Crear énfasis",
-  "list_enfasis":"Listar énfasis"
+  "list_enfasis":"Listar énfasis",
+  "administracion_inscripcion" : "Administración de inscripción",
+  "administracion_inscripcion_lista" : "Lista de inscripciones",
+  "administracion_inscripcion_crear" : "Crear inscripción",
+  "administracion_inscripcion_soporte" : "Soporte de inscripción"
 }

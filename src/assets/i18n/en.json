@@ -82,5 +82,9 @@
   "horarios-grupos": "Schedules by Groups",
   "gestion-horario": "Schedule Management",
   "crud_enfasis": "Create Emphasis",
-  "list_enfasis": "List Emphasis"
+  "list_enfasis": "List Emphasis",
+  "administracion_inscripcion": "Enrollment Administration",
+  "administracion_inscripcion_lista": "List of Enrollments",
+  "administracion_inscripcion_crear": "Create Enrollment",
+  "administracion_inscripcion_soporte": "Enrollment Support"
 }
