@@ -36,8 +36,7 @@
               "src/assets/styles/sga-theme.scss",
               "src/styles.scss"
             ],
-            "scripts": [
-            ],
+            "scripts": [],
             "customWebpackConfig": {
               "path": "extra-webpack.config.js",
               "libraryName": "core-mf",
@@ -46,7 +45,7 @@
           },
           "configurations": {
             "production": {
-              "optimization":true,
+              "optimization": true,
               "outputHashing": "none",
               "sourceMap": false,
               "namedChunks": false,

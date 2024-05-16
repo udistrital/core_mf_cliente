@@ -1,9 +1,10 @@
 {
   "Inicio": "Inicio",
-  "solicitudes": "Solicitudes",
+  "solicitudes_datos_basicos": "Solicitudes datos básicos",
   "solicitudes_lista": "Lista de solicitudes realizadas",
-  "solicitud": "Solicitud",
+  "actualizacion_de_datos": "Actualización de datos",
   "actualizacion_datos": "Actualización de datos",
+  "solicitudes": "Solicitudes",
   "actualizacion_nombres": "Actualización de nombres",
   "actualizacion": "Actualización",
   "gestionar_solicitudes": "Gestionar solicitudes",
@@ -81,5 +82,9 @@
   "horarios-grupos": "Horarios por grupos",
   "gestion-horario": "Gestión de horario",
   "crud_enfasis":"Crear énfasis",
-  "list_enfasis":"Listar énfasis"
+  "list_enfasis":"Listar énfasis",
+  "administracion_inscripcion" : "Administración de inscripción",
+  "administracion_inscripcion_lista" : "Lista de inscripciones",
+  "administracion_inscripcion_crear" : "Crear inscripción",
+  "administracion_inscripcion_soporte" : "Soporte de inscripción"
 }
