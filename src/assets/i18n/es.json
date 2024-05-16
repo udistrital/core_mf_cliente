@@ -1,9 +1,10 @@
 {
   "Inicio": "Inicio",
-  "solicitudes": "Solicitudes",
+  "solicitudes_datos_basicos": "Solicitudes datos básicos",
   "solicitudes_lista": "Lista de solicitudes realizadas",
-  "solicitud": "Solicitud",
+  "actualizacion_de_datos": "Actualización de datos",
   "actualizacion_datos": "Actualización de datos",
+  "solicitudes": "Solicitudes",
   "actualizacion_nombres": "Actualización de nombres",
   "actualizacion": "Actualización",
   "gestionar_solicitudes": "Gestionar solicitudes",
