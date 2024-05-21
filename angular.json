@@ -30,9 +30,6 @@
               "src/assets"
             ],
             "styles": [
-              "src/assets/styles/sga-global.scss",
-              "src/assets/styles/sga-form.scss",
-              "src/assets/styles/sga-text.scss",
               "src/assets/styles/sga-theme.scss",
               "src/styles.scss"
             ],
@@ -77,6 +74,13 @@
               "deployUrl": "https://pruebascoreclientes.portaloas.udistrital.edu.co/"
             },
             "local": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "outputHashing": "none",
               "deployUrl": "http://localhost:4201/"
             }
           },

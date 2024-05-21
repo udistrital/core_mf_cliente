@@ -105,7 +105,7 @@ $light-theme: mat.define-light-theme((color: (primary: mat.define-palette($md-pr
         accent: mat.define-palette($md-accent, 500),
         warn: mat.define-palette($md-warning, 500),
       ),
-      typography: mat.define-typography-config($font-family: 'Open Sans',
+      typography: mat.define-typography-config($font-family: 'Raleway',
       ),
       desity: 0,
     ));
