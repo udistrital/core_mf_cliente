@@ -86,5 +86,8 @@
   "administracion_inscripcion" : "Administración de inscripción",
   "administracion_inscripcion_lista" : "Lista de inscripciones",
   "administracion_inscripcion_crear" : "Crear inscripción",
-  "administracion_inscripcion_soporte" : "Soporte de inscripción"
+  "administracion_inscripcion_soporte" : "Soporte de inscripción",
+  "generar_codificacion" : "Generar codificación",
+  "reporte_inscritos" : "Reporte de inscritos",
+  "reporte_codificacion" : "Reporte codificación"
 }
