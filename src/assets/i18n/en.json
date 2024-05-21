@@ -86,5 +86,8 @@
   "administracion_inscripcion": "Enrollment Administration",
   "administracion_inscripcion_lista": "List of Enrollments",
   "administracion_inscripcion_crear": "Create Enrollment",
-  "administracion_inscripcion_soporte": "Enrollment Support"
+  "administracion_inscripcion_soporte": "Enrollment Support",
+  "generar_codificacion" : "Generate codification",
+  "reporte_inscritos" : "Enrolled report",
+  "reporte_codificacion" : "Codification report"
 }
