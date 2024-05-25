@@ -1,12 +1,13 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificacionesService } from './../services/notificaciones.service';
+import { LoadComponent } from '../load/load.component';
 
 @Component({
   selector: 'ng-uui-notioas',
   templateUrl: './notioas.component.html',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LoadComponent],
   styleUrls: ['./notioas.component.scss']
 })
 export class NotioasComponent implements OnInit {

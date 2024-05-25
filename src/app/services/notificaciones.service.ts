@@ -29,28 +29,6 @@ export class NotificacionesService {
   nombreCola: string = '';
   path: string = '';
 
-  // !!!!  CAMBIAR !!!! - Definir el nombre de al cola de acuerdo al rol
-  colas = {
-    PLANEACION: 'colaAsistentePlaneacion',
-    JEFE_UNIDAD_PLANEACION: 'colaJefePlaneacion',
-    JEFE_DEPENDENCIA: 'colaJefeUnidad',
-    ASISTENTE_DEPENDENCIA: 'colaAsistenteUnidad',
-  };
-
-  // constructor(private confService: ConfiguracionService) {
-  //     //Cerrar el panel de notificaciones al hacer clic por fuera de el
-  //     const up$ = fromEvent(document, 'mouseup');
-  //     up$.subscribe((data: any) => {
-  //         if (this.menuActivoSubject) {
-  //             if (((data.path
-  //                 .map((info: any) => info.localName))
-  //                 .filter((data: any) => (data === 'ng-uui-notioas'))).length === 0) {
-  //                 this.closePanel();
-  //             }
-  //         }
-  //     });
-  // }
-
   constructor(private confService: ConfiguracionService) {
     //Cerrar el panel de notificaciones al hacer clic por fuera de el
     fromEvent<KeyboardEvent>(document, 'mouseup').subscribe(
@@ -85,7 +63,7 @@ export class NotificacionesService {
     if (typeof usuario.userService !== 'undefined') {
       this.usuario = usuario.userService;
       this.rol = usuario.userService.role[0] ?? '';
-      this.nombreCola = this.colas['JEFE_DEPENDENCIA']; // !!!!  CAMBIAR !!!!
+      this.nombreCola = 'colaJefeUnidad'; // !!!!  CAMBIAR !!!!
       this.queryNotifications('');
     }
   }

@@ -35,7 +35,7 @@
         @if (notificaciones) {
             <div class="header-button-notification" (click)="togglenotify()">
                 <span class="material-icons">notifications</span>
-                @if (menuActivo && numPendientes > 0) {
+                @if (!menuActivo && numPendientes > 0) {
                     <div class="notification-badge">{{numPendientes <= 9 ? numPendientes : '+9'}}</div>
                 }
             </div>
