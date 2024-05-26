@@ -49,7 +49,6 @@ export class MenuService {
       this.userService.user$.subscribe((userResponse: any) => {
         const { user, userService } = userResponse;
         if (user && userService) {
-          console.log(user, userService)
           const role1 = user
             ? user.role
               ? user.role.filter(
