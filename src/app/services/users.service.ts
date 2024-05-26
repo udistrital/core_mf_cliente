@@ -1,9 +1,9 @@
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { ImplicitAutenticationService } from './implicit_autentication.service';
 import { AnyService } from './any.service';
+import { decrypt, encrypt } from '../utils/util-encrypt';
 
 const path = environment.TERCEROS_SERVICE;
 
@@ -11,148 +11,103 @@ const path = environment.TERCEROS_SERVICE;
   providedIn: 'root',
 })
 export class UserService {
-
-  private user$ = new Subject<[object]>();
-  private userSubject = new BehaviorSubject(null);
+  private user$ = new Subject<object>();
+  private userSubject = new BehaviorSubject<object | null>(null);
   public tercero$ = this.userSubject.asObservable();
   public user: any;
 
-  constructor(private anyService: AnyService, private autenticationService: ImplicitAutenticationService) {
-    if (window.localStorage.getItem('id_token') !== null && window.localStorage.getItem('id_token') !== undefined) {
-      /* const id_token = window.localStorage.getItem('id_token').split('.');
-      const payload = JSON.parse(atob(id_token[1])); */
-      let DocIdentificacion: string | null = null;
-      let CorreoUsuario = null;
-      let UsuarioWSO2 = null;
-
-      this.autenticationService.getDocument().then(async (document: any) => {
-        if (document) {
-          DocIdentificacion = document;
-        }
-        let payload = this.autenticationService.getPayload();
-        UsuarioWSO2 = payload.sub? payload.sub : null;
-        CorreoUsuario = payload.email ? payload.email : null;
-
-        let foundId: boolean = false;
-
-        if (DocIdentificacion) {
-          await this.findByDocument(DocIdentificacion, UsuarioWSO2, CorreoUsuario).then(found => foundId = true).catch(e => foundId = false);
-        }
-
-        if (UsuarioWSO2 && !foundId) {
-          await this.findByUserEmail(UsuarioWSO2).then(found => foundId = true).catch(e => foundId = false);
-        }
-
-        if (CorreoUsuario && !foundId) {
-          await this.findByUserEmail(CorreoUsuario).then(found => foundId = true).catch(e => foundId = false);
-        }
-
-        if (!foundId) {
-          window.localStorage.setItem('persona_id', '0');
-        }
-
-      });
+  constructor(
+    private anyService: AnyService,
+    private autenticationService: ImplicitAutenticationService
+  ) {
+    const idToken = window.localStorage.getItem('id_token');
+    if (idToken) {
+      this.initializeUser();
     }
   }
 
-  private findByDocument(DocIdentificacion:any, Usuario:any, Correo:any){
+  private async initializeUser() {
+    console.log('initializeUser');
+    const payload = this.autenticationService.getPayload();
+    const docIdentificacion = await this.autenticationService.getDocument();
+    const usuarioWSO2 = payload.sub || null;
+    const correoUsuario = payload.email || null;
+
+    let foundId = false;
+
+    if (docIdentificacion) {
+      foundId = await this.findByDocument(docIdentificacion, usuarioWSO2, correoUsuario);
+    }
+    if (usuarioWSO2 && !foundId) {
+      foundId = await this.findByUserEmail(usuarioWSO2);
+    }
+    if (correoUsuario && !foundId) {
+      await this.findByUserEmail(correoUsuario);
+    }
+  }
+
+  private findByDocument(docIdentificacion: string, usuario: string | null, correo: string | null): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-     this.anyService.get(path, 'datos_identificacion?query=Activo:true,Numero:' + DocIdentificacion + '&sortby=FechaCreacion&order=desc')
-      .subscribe((res: any) => {
-        if (res !== null) {
-          if (res.length > 1) {
-            let tercero = null;
-            for (let i = 0; i < res.length; i++) {
-              if (res[i].TerceroId.UsuarioWSO2 == Usuario){
-                tercero = res[i].TerceroId;
-                break;
-              }
-            }
-            if(tercero == null){
-              for (let i = 0; i < res.length; i++) {
-                if (res[i].TerceroId.UsuarioWSO2 == Correo){
-                  tercero = res[i].TerceroId;
-                  break;
-                }
-              } 
-            }
-            if(tercero != null) {
-              this.user = tercero;
+      this.anyService.get(path, `datos_identificacion?query=Activo:true,Numero:${docIdentificacion}&sortby=FechaCreacion&order=desc`)
+        .subscribe((res: any) => {
+          if (res && res.length && Object.keys(res[0]).length > 0) {
+            this.user = this.extractTercero(res, usuario, correo) || res[0].TerceroId;
+            if (this.user) {
+              this.user.Documento = docIdentificacion;
+              this.updateUser(this.user);
+              resolve(true);
             } else {
-              this.user = res[0].TerceroId;
+              resolve(false);
             }
           } else {
-            this.user = res[0].TerceroId;
+            resolve(false);
           }
-          
-          this.user['Documento'] = DocIdentificacion;
-          if (Object.keys(this.user).length !== 0) {
-            this.user$.next(this.user);
-            this.userSubject.next(this.user);              // window.localStorage.setItem('ente', res[0].Ente);
-            window.localStorage.setItem('persona_id', this.user.Id);
-            resolve(true);
-          } else {
-            //this.user$.next(this.user);
-            window.localStorage.setItem('persona_id', '0');
-            reject(false);
-          }
-        } else {
+        }, (error) => {
           reject(false);
-        }
-      });
+        });
     });
   }
 
-  private findByUserEmail(UserEmail:any){
+  private findByUserEmail(userEmail: string): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-    this.anyService.get(path, 'tercero?query=UsuarioWSO2:' + UserEmail)
-      .subscribe((res:any) => {
-        if (res !== null) {
-          this.user = res[0];
-          if (Object.keys(this.user).length !== 0) {
-            this.user$.next(this.user);
-            this.userSubject.next(this.user);
-            window.localStorage.setItem('persona_id', this.user.Id);
+      this.anyService.get(path, `tercero?query=UsuarioWSO2:${userEmail}`)
+        .subscribe((res: any) => {
+          if (res && res.length && Object.keys(res[0]).length > 0) {
+            this.user = res[0];
+            this.updateUser(this.user);
             resolve(true);
           } else {
-            //this.user$.next(this.user);
-            window.localStorage.setItem('persona_id', '0');
-            reject(false);
+            resolve(false);
           }
-        }
-        else {
-          //this.user$.next(this.user);
-          window.localStorage.setItem('persona_id', '0');
+        }, (error) => {
           reject(false);
-        }
-      });
+        });
     });
   }
 
-  // public getEnte(): number {
-  //   return parseInt(window.localStorage.getItem('ente'), 10);
-  // }
+  private extractTercero(res: any[], usuario: string | null, correo: string | null): any {
+    let tercero = res.find(item => item.TerceroId.UsuarioWSO2 === usuario) || res.find(item => item.TerceroId.UsuarioWSO2 === correo);
+    return tercero?.TerceroId || null;
+  }
 
-  public getPrograma(): number {
-    return parseInt(window.localStorage.getItem('programa')!, 10);
+  private updateUser(user: any) {
+    this.user$.next(user);
+    this.userSubject.next(user);
+    const personaId = encrypt(user.Id.toString());
+    window.localStorage.setItem('persona_id', personaId);
   }
 
   public getUsuario(): string {
-    return window.localStorage.getItem('usuario')!.toString();
+    return window.localStorage.getItem('usuario')!;
   }
 
   public getPersonaId(): number {
-    const id_token = window.localStorage.getItem('user')!;
-    const user = JSON.parse(atob(id_token)); 
-    this.findByUserEmail(user.userService.email)
-    return parseInt(window.localStorage.getItem('persona_id')!, 10);
+    const id = decrypt(window.localStorage.getItem('persona_id'));
+    return parseInt(id!, 10);
   }
 
-  public getPeriodo(): number {
-    return parseInt(window.localStorage.getItem('IdPeriodo')!, 10)
-  }
 
   public getUser() {
-    return this.user$.asObservable();
+    return this.tercero$;
   }
 }
