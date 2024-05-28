@@ -128,19 +128,31 @@ export class ImplicitAutenticationService {
               userServiceResponse.userService.role.length === 0
             ) {
               userServiceResponse.userService.role = ['ASPIRANTE'];
-            }
+            } else {
+              // Definir los roles permitidos
+              const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
 
-            console.log("user", {
-              ...userPayload ,
-              ...userServiceResponse,
-            })
+              // Verificar si tiene roles diferentes a los permitidos
+              const hasDisallowedRoles =
+                userServiceResponse.userService.role.some(
+                  (role:any) => !allowedRoles.includes(role)
+                );
+
+              // Si no tiene roles diferentes a los permitidos, agregar "ASPIRANTE"
+              if (
+                !hasDisallowedRoles &&
+                !userServiceResponse.userService.role.includes('ASPIRANTE')
+              ) {
+                userServiceResponse.userService.role.push('ASPIRANTE');
+              }
+            }
 
             localStorage.setItem(
               'user',
               btoa(
                 JSON.stringify({
                   ...userPayload,
-                  ...userServiceResponse
+                  ...userServiceResponse,
                 })
               )
             );
@@ -337,7 +349,7 @@ export class ImplicitAutenticationService {
           } else {
             resolve(null);
           }
-          if(subscription){
+          if (subscription) {
             subscription.unsubscribe();
           }
         },
