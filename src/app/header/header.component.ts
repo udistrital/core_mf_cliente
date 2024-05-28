@@ -96,7 +96,7 @@ export class HeaderComponent implements OnChanges {
     up$.subscribe((data: any) => {
       if (this.cerrarSesion) {
         if (
-          data.path
+          data.path && data.path
             .map((info: any) => {
               return info.localName;
             })
@@ -106,6 +106,7 @@ export class HeaderComponent implements OnChanges {
         ) {
           this.toogleCerrarSesion();
         }
+        this.toogleCerrarSesion();
       }
     });
     this.langCookie = getCookie('lang') || 'es';
@@ -122,7 +123,6 @@ export class HeaderComponent implements OnChanges {
       },
     });
     window.dispatchEvent(event);
-    //console.log("cookie lang",this.langCookie)
   }
 
   validateLang() {
