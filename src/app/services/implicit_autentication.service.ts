@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Md5 } from 'ts-md5';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Subscription, of } from 'rxjs';
 import Swal from 'sweetalert2';
 import { delay, retry } from 'rxjs/operators';
 
@@ -128,14 +128,31 @@ export class ImplicitAutenticationService {
               userServiceResponse.userService.role.length === 0
             ) {
               userServiceResponse.userService.role = ['ASPIRANTE'];
+            } else {
+              // Definir los roles permitidos
+              const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
+
+              // Verificar si tiene roles diferentes a los permitidos
+              const hasDisallowedRoles =
+                userServiceResponse.userService.role.some(
+                  (role:any) => !allowedRoles.includes(role)
+                );
+
+              // Si no tiene roles diferentes a los permitidos, agregar "ASPIRANTE"
+              if (
+                !hasDisallowedRoles &&
+                !userServiceResponse.userService.role.includes('ASPIRANTE')
+              ) {
+                userServiceResponse.userService.role.push('ASPIRANTE');
+              }
             }
 
             localStorage.setItem(
               'user',
               btoa(
                 JSON.stringify({
-                  ...{ user: userPayload },
-                  ...{ userService: userServiceResponse },
+                  ...userPayload,
+                  ...userServiceResponse,
                 })
               )
             );
@@ -324,14 +341,25 @@ export class ImplicitAutenticationService {
 
   public getDocument(): Promise<string | null> {
     return new Promise<string | null>((resolve, reject) => {
-      const subscription = this.user$.subscribe((data: any) => {
-        if (data && data.userService && data.userService.documento) {
-          resolve(data.userService.documento);
-          subscription.unsubscribe();
-        } else {
-          resolve(null);
+      let subscription: Subscription | null = null;
+      subscription = this.user$.subscribe(
+        (data: any) => {
+          if (data && data.userService && data.userService.documento) {
+            resolve(data.userService.documento);
+          } else {
+            resolve(null);
+          }
+          if (subscription) {
+            subscription.unsubscribe();
+          }
+        },
+        (error) => {
+          reject(error);
+          if (subscription) {
+            subscription.unsubscribe();
+          }
         }
-      });
+      );
     });
   }
 

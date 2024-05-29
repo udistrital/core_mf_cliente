@@ -27,23 +27,27 @@ export class UserService {
   }
 
   private async initializeUser() {
-    console.log('initializeUser');
-    const payload = this.autenticationService.getPayload();
-    const docIdentificacion = await this.autenticationService.getDocument();
-    const usuarioWSO2 = payload.sub || null;
-    const correoUsuario = payload.email || null;
-
-    let foundId = false;
-
-    if (docIdentificacion) {
-      foundId = await this.findByDocument(docIdentificacion, usuarioWSO2, correoUsuario);
+    try {
+      const payload = this.autenticationService.getPayload();
+      const docIdentificacion = await this.autenticationService.getDocument();
+      const usuarioWSO2 = payload.sub || null;
+      const correoUsuario = payload.email || null;
+  
+      let foundId = false;
+  
+      if (docIdentificacion) {
+        foundId = await this.findByDocument(docIdentificacion, usuarioWSO2, correoUsuario);
+      }
+      if (usuarioWSO2 && !foundId) {
+        foundId = await this.findByUserEmail(usuarioWSO2);
+      }
+      if (correoUsuario && !foundId) {
+        await this.findByUserEmail(correoUsuario);
+      }
+    } catch (error) {
+      console.error('Error inicializando usuario (core): ', error)
     }
-    if (usuarioWSO2 && !foundId) {
-      foundId = await this.findByUserEmail(usuarioWSO2);
-    }
-    if (correoUsuario && !foundId) {
-      await this.findByUserEmail(correoUsuario);
-    }
+    
   }
 
   private findByDocument(docIdentificacion: string, usuario: string | null, correo: string | null): Promise<boolean> {
