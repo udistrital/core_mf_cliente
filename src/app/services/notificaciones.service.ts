@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ConfiguracionService } from './configuracion.service';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { fromEvent } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -24,10 +25,8 @@ export class NotificacionesService {
   private notificacionSubject = new BehaviorSubject(false);
   public notificacion$ = this.notificacionSubject.asObservable();
 
-  rol: any;
-  usuario: any;
-  nombreCola: string = '';
-  path: string = '';
+  docUsuario: string = '';
+  cola: string = '';
 
   constructor(private confService: ConfiguracionService) {
     //Cerrar el panel de notificaciones al hacer clic por fuera de el
@@ -53,18 +52,21 @@ export class NotificacionesService {
   }
 
   closePanel(): void {
-    console.log('entra acá?');
-
     this.menuActivoSubject.next(false);
   }
 
-  init(path: string, usuario: any): void {
-    this.path = path;
-    if (typeof usuario.userService !== 'undefined') {
-      this.usuario = usuario.userService;
-      this.rol = usuario.userService.role[0] ?? '';
-      this.nombreCola = 'colaJefeUnidad'; // !!!!  CAMBIAR !!!!
-      this.queryNotifications('');
+  init(colas: any, usuario: any, entorno: string): void {
+    const userService = usuario.userService;
+    if (userService && colas) {
+      this.docUsuario = userService.documento;
+      let roles = userService.role;
+
+      // Obtener el nombre de la cola a partir del rol y dependiendo del entorno
+      let rol = Object.keys(colas).find((rol) => roles.includes(rol)) ?? null;
+      if (rol) {
+        this.cola = entorno == 'test' ? `cola${colas[rol]}` : colas[rol];
+        this.queryNotifications();
+      }
     }
   }
 
@@ -72,42 +74,36 @@ export class NotificacionesService {
     let cuerpoMensaje = notificacion.Body;
     if (cuerpoMensaje.MessageAttributes.EstadoMensaje.Value == 'pendiente') {
       this.numPendientesSubject.next(0);
-      this.queryNotifications(cuerpoMensaje.MessageId); // Cambia el estado a revisado
+      this.queryNotifications(cuerpoMensaje.MessageId); // Cambiar estado a revisado
     }
     this.notificacionSubject.next(notificacion);
   }
 
-  queryNotifications(id: string): void {
-    this.loading.next(true);
+  queryNotifications(id: string = ''): void {
+    this.loading.next(true)
 
-    if (this.usuario.documento === '') {
+    if (this.docUsuario === "") {
       this.loading.next(false);
       return;
     }
 
-    let url: string;
-    if (id != '') {
-      url = `colas/mensajes/usuario?nombre=${this.nombreCola}.fifo&usuario=${this.usuario.documento}&idMensaje=${id}`;
-    } else {
-      url = `colas/mensajes/usuario?nombre=${this.nombreCola}.fifo&usuario=${this.usuario.documento}`;
-    }
-    this.confService.getWithoutPath(`${this.path}${url}`).subscribe(
+    const endpoint = `colas/mensajes/usuario?nombre=${this.cola}.fifo&usuario=${this.docUsuario}`;
+    const url = id ? `${endpoint}&idMensaje=${id}` : endpoint;
+    this.confService.getWithoutPath(`${environment.NOTIFICACION_MID_SERVICE}${url}`).subscribe(
       (res: any) => {
         if (res && res.Data) {
           this.notificaciones = res.Data;
           this.numPendientes = this.notificaciones.filter(
-            (mensaje: any) =>
-              mensaje.Body.MessageAttributes.EstadoMensaje.Value === 'pendiente'
-          ).length;
+            (mensaje:any) => mensaje.Body.MessageAttributes.EstadoMensaje.Value === "pendiente"
+          ).length; 
           this.numPendientesSubject.next(this.numPendientes);
           this.notificacionesSubject.next(this.notificaciones);
         }
-        this.loading.next(false);
-      },
-      (error: any) => {
+        this.loading.next(false)
+      }, (error: any) => {
         console.log(error);
         this.loading.next(false);
       }
-    );
+    )
   }
 }
