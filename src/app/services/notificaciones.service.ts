@@ -3,6 +3,7 @@ import { ConfiguracionService } from './configuracion.service';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { fromEvent } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -22,13 +23,10 @@ export class NotificacionesService {
   private loading = new BehaviorSubject(false);
   public loading$ = this.loading.asObservable();
 
-  private notificacionSubject = new BehaviorSubject(false);
-  public notificacion$ = this.notificacionSubject.asObservable();
-
   docUsuario: string = '';
   cola: string = '';
 
-  constructor(private confService: ConfiguracionService) {
+  constructor(private router: Router, private confService: ConfiguracionService) {
     //Cerrar el panel de notificaciones al hacer clic por fuera de el
     fromEvent<KeyboardEvent>(document, 'mouseup').subscribe(
       (data: KeyboardEvent) => {
@@ -76,7 +74,21 @@ export class NotificacionesService {
       this.numPendientesSubject.next(0);
       this.queryNotifications(cuerpoMensaje.MessageId); // Cambiar estado a revisado
     }
-    this.notificacionSubject.next(notificacion);
+    this.goTo(notificacion)
+  }
+
+  goTo(notificacion: any) {
+    if (typeof notificacion.Body.MessageAttributes.Url != "undefined") {
+      let url = `/${notificacion.Body.MessageAttributes.Url.Value}`
+      localStorage.setItem("notificacion", JSON.stringify(notificacion))
+      
+      if (this.router.url != url) {
+        this.router.navigate([url]);
+      } else {
+        let event = new CustomEvent("notificacion")
+        window.dispatchEvent(event)
+      }
+    }
   }
 
   queryNotifications(id: string = ''): void {

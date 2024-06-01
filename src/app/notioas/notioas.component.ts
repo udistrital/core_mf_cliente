@@ -17,11 +17,7 @@ export class NotioasComponent implements OnInit {
   loading: boolean = false;
   notificaciones: any[] = [];
 
-  constructor(public notificacionesService: NotificacionesService) {
-    this.notificacionesService.notificacion$.subscribe((notificacion) => {
-      this.notificacion.emit(notificacion)
-    });
-  }
+  constructor(public notificacionesService: NotificacionesService) {}
 
   ngOnInit(): void {
     this.subscribeToMenuActivo();
