@@ -18,10 +18,12 @@ import { RouterModule } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { MenuService } from '../services/menu.service';
 import { MenuAplicacionesService } from './../services/menuAplicaciones.service';
+import { NotificacionesService } from './../services/notificaciones.service';
 import { MenuAplicacionesComponent } from '../menu-aplicaciones/menu-aplicaciones.component';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '../services/users.service';
+import { NotioasComponent } from '../notioas/notioas.component';
 
 enum VisibilityState {
   Visible = 'visible',
@@ -32,7 +34,7 @@ enum VisibilityState {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [MenuAplicacionesComponent, MatSelectModule, RouterModule],
+  imports: [MenuAplicacionesComponent, MatSelectModule, RouterModule, NotioasComponent],
   encapsulation: ViewEncapsulation.Emulated,
   animations: [
     trigger('iconAnimation', [
@@ -65,15 +67,18 @@ enum VisibilityState {
   ],
 })
 export class HeaderComponent implements OnChanges {
-  sidebar = false;
-  load = true;
-  basePathAssets = 'https://pruebasassets.portaloas.udistrital.edu.co/';
   @Input('appname') appname: any;
   @Input('username') username: any;
   @Input('notificaciones') notificaciones: any;
   @Input('menuApps') menuApps: any;
   @Output('logoutEvent') logoutEvent: EventEmitter<any> = new EventEmitter();
+
+  menuActivo: boolean = false;
+  numPendientes: number = 0;
+  sidebar = false;
+  load = true;
   cerrarSesion: boolean = false;
+  basePathAssets = 'https://pruebasassets.portaloas.udistrital.edu.co/';
 
   langs: string[] = ['es', 'en']; // idiomas que va a soportar nuestra aplicacion
   langCookie: string = 'en';
@@ -83,6 +88,7 @@ export class HeaderComponent implements OnChanges {
   constructor(
     private cdr: ChangeDetectorRef,
     private menuService: MenuService,
+    private notificacionesService: NotificacionesService,
     public menuAplicacionesService: MenuAplicacionesService,
     private translate: TranslateService,
     private userService: UserService
@@ -109,9 +115,23 @@ export class HeaderComponent implements OnChanges {
         this.toogleCerrarSesion();
       }
     });
+    this.subscribeToMenuActivo();
+    this.subscribeToNumPendientes();
     this.langCookie = getCookie('lang') || 'es';
     this.translate.setDefaultLang(this.langCookie);
     this.cdr.detectChanges();
+  }
+
+  private subscribeToMenuActivo(): void {
+    this.notificacionesService.menuActivo$.subscribe((menuActivo: boolean) => {
+      this.menuActivo = menuActivo;
+    });
+  }
+
+  private subscribeToNumPendientes(): void {
+    this.notificacionesService.numPendientes$.subscribe((numPendientes: number) => {
+      this.numPendientes = numPendientes;
+    });
   }
 
   cambiarIdioma(lang: string) {
@@ -181,9 +201,9 @@ export class HeaderComponent implements OnChanges {
     this.menuAplicacionesService.toogleMenuNotify();
   }
 
-  // togglenotify(): void {
-  //   this.notioasService.toogleMenuNotify();
-  // }
+  togglenotify(): void {
+    this.notificacionesService.toogleMenuNotify();
+  }
 
   openSidebar(): void {
     this.menuService.openNav();

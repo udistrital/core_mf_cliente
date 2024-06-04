@@ -37,6 +37,24 @@ export class ConfiguracionService {
       );
   }
 
+  getWithoutPath(endpoint: string) {
+    this.httpOptions = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      }),
+    };
+    return this.http.get<any>(`${endpoint}`, this.httpOptions).pipe(
+      map((res) => {
+        if (res && res.hasOwnProperty('Body')) {
+          return res;
+        } else {
+          return res;
+        }
+      })
+    );
+  }
+
   /**
    * Perform a POST http request
    * @param endpoint service's end-point

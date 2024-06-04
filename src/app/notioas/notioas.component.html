@@ -1,0 +1,16 @@
+<div id="menu" [ngClass]="{'aplicaciones_menu_container': true, 'menu_is_active': menuActivo }">
+    <div class="title-notifications">
+        <p>Notificaciones</p>
+    </div>
+    <div class="notifications-container">
+        <div *ngIf="loading; else loadedContent"><ng-uui-load></ng-uui-load> </div>
+        <ng-template #loadedContent>
+            <div *ngFor="let notificacion of notificaciones" (click)="redirect(notificacion)" class="notification-item">
+                <div class="notifications-text-container">
+                    <p>{{notificacion.Body.Message}}</p>
+                </div>
+                <div *ngIf="notificacion.Body.MessageAttributes.EstadoMensaje.Value == 'pendiente'" class="notification-badge"></div>
+            </div>
+        </ng-template>
+    </div>
+</div>

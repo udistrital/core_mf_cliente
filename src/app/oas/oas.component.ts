@@ -11,6 +11,7 @@ import { ConfiguracionService } from '../services/configuracion.service';
 import { ImplicitAutenticationService } from '../services/implicit_autentication.service';
 import { MenuService } from '../services/menu.service';
 import { MenuAplicacionesService } from '../services/menuAplicaciones.service';
+import { NotificacionesService } from '../services/notificaciones.service';
 import { catalogo } from './../services/catalogo';
 import { HeaderComponent } from '../header/header.component';
 import { LoginComponent } from '../login/login.component';
@@ -60,11 +61,12 @@ export class OasComponent implements OnChanges {
   notificaciones: boolean = false;
   menuApps: boolean = false;
   CONFIGURACION_SERVICE: any;
-  NOTIFICACION_SERVICE: any;
+  COLAS_NOTIFICACIONES: any;
   entorno: any;
   navItems: any;
   constructor(
     private confService: ConfiguracionService,
+    private notificacionesService: NotificacionesService,
     private menuAppService: MenuAplicacionesService,
     private menuService: MenuService,
     private cdr: ChangeDetectorRef,
@@ -91,6 +93,9 @@ export class OasComponent implements OnChanges {
             this.userInfo = data.user;
             this.userInfoService = data.userInfoService;
             this.user.emit(data);
+            if (this.notificaciones) {
+              this.notificacionesService.init(this.COLAS_NOTIFICACIONES, data, this.entorno);
+            }
             if (this.menuApps) {
               this.menuAppService.init(
                 catalogo[this.entorno as keyof typeof catalogo],
@@ -124,7 +129,7 @@ export class OasComponent implements OnChanges {
       if (changes.environment.currentValue !== undefined) {
         const {
           CONFIGURACION_SERVICE,
-          NOTIFICACION_SERVICE,
+          COLAS_NOTIFICACIONES,
           entorno,
           notificaciones,
           menuApps,
@@ -141,7 +146,7 @@ export class OasComponent implements OnChanges {
         this.menuApps = menuApps;
         this.entorno = entorno;
         this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
-        this.NOTIFICACION_SERVICE = NOTIFICACION_SERVICE;
+        this.COLAS_NOTIFICACIONES = COLAS_NOTIFICACIONES;
         if (autenticacion) {
           this.autenticacionService.init(TOKEN);
           this.autenticacionService.login(true);
