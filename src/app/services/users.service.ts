@@ -105,9 +105,19 @@ export class UserService {
     return window.localStorage.getItem('usuario')!;
   }
 
-  public getPersonaId(): number {
-    const id = decrypt(window.localStorage.getItem('persona_id'));
-    return parseInt(id!, 10);
+  public async getPersonaId(): Promise<number | null> {
+    return new Promise((resolve, reject) => {
+      const personaId = window.localStorage.getItem('persona_id');
+      if (personaId === null) {
+        resolve(null);
+      } else {
+        try {
+          resolve(decrypt(personaId));
+        } catch (error) {
+          reject(error);
+        }
+      }
+    });
   }
 
 
