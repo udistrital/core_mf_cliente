@@ -27,6 +27,7 @@
     "@ngx-translate/core": "^15.0.0",
     "@ngx-translate/http-loader": "^8.0.0",
     "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.5",
     "rxjs": "~7.8.1",
     "single-spa": ">=6.0.1",
     "single-spa-angular": "^9.0.1",
@@ -36,12 +37,15 @@
     "zone.js": "~0.14.4"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "17.0.1",
+    "@angular-builders/custom-webpack": "^17.0.1",
     "@angular-devkit/build-angular": "^17.3.2",
     "@angular/cli": "^17.3.2",
     "@angular/compiler-cli": "^17.3.2",
+    "@ngx-env/builder": "^18.0.1",
     "@types/crypto-js": "^4.2.2",
     "@types/jasmine": "~5.1.4",
+    "@types/node": "^20.14.8",
+    "dotenv-webpack": "^8.1.0",
     "jasmine-core": "~5.1.2",
     "karma": "~6.4.3",
     "karma-chrome-launcher": "~3.2.0",
@@ -49,6 +53,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "style-loader": "^3.3.4",
-    "typescript": "~5.4.3"
+    "typescript": "~5.4.3",
+    "webpack": "^5.92.1"
   }
 }

@@ -15,4 +15,5 @@ export const environment = {
   },
   TERCEROS_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/terceros_crud/v1/',
   apiUrl: 'http://localhost:4201/',
+  encryptSecretKey: process.env["NG_APP_KEY"]
 };
