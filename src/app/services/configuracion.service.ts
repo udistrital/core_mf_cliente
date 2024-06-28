@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class ConfiguracionService {
   httpOptions: any;
   path: any;
+  appLang: string = 'es'; 
 
   constructor(private http: HttpClient) {
     this.path = environment.CONFIGURACION_SERVICE;
@@ -53,6 +54,14 @@ export class ConfiguracionService {
         }
       })
     );
+  }
+
+  setAppLang(lang: string) {
+    this.appLang = lang;
+  }
+
+  getAppLang(): string {
+    return this.appLang;
   }
 
   /**
