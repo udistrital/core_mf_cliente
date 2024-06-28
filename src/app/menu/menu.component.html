@@ -9,22 +9,22 @@
         </div>
         @if (item.Opciones && item.Opciones.length) {
         <span class="arrow-container" >
-            <mat-icon [@indicatorRotate]="expanded ? 'expanded': 'collapsed'">
+            <mat-icon [@indicatorRotate]="item.expanded ? 'expanded': 'collapsed'">
                 expand_more
             </mat-icon>
         </span>
         }
     </div>
+    @if (item.expanded) {
+      <div class="separator" [@slideDown]></div>
+      <div class="sub-menu" [@slideDown]>
+          @for (
+          child of item.Opciones; track $index) {
+          <ng-uui-menu  [item]="child" [depth]="depth+1">
+          </ng-uui-menu>
+          }
+      
+      </div>
+      }
 </mat-list-item>
 
-@if (expanded) {
-<div class="separator" [@slideDown]></div>
-<div class="sub-menu" [@slideDown]>
-    @for (
-    child of item.Opciones; track $index) {
-    <ng-uui-menu  [item]="child" [depth]="depth+1">
-    </ng-uui-menu>
-    }
-
-</div>
-}

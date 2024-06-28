@@ -59,6 +59,7 @@ export class OasComponent implements OnChanges {
   username: string = '';
   isloading: boolean = false;
   notificaciones: boolean = false;
+  appLang: string = '';
   menuApps: boolean = false;
   CONFIGURACION_SERVICE: any;
   COLAS_NOTIFICACIONES: any;
@@ -132,6 +133,7 @@ export class OasComponent implements OnChanges {
           COLAS_NOTIFICACIONES,
           entorno,
           notificaciones,
+          appLang,
           menuApps,
           appMenu,
           navItems,
@@ -142,6 +144,8 @@ export class OasComponent implements OnChanges {
         this.appMenu = appMenu;
         this.navItems = navItems;
         this.appname = appname;
+        this.appLang = appLang;
+        console.log('entorno', appLang);
         this.notificaciones = notificaciones;
         this.menuApps = menuApps;
         this.entorno = entorno;

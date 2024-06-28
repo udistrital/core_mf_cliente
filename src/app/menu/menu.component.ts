@@ -3,7 +3,6 @@ import {
   HostBinding,
   Input,
   NO_ERRORS_SCHEMA,
-  OnInit,
 } from '@angular/core';
 import { NavItem } from './../interfaces/nav-item';
 import { MenuService } from '../services/menu.service';
@@ -41,11 +40,10 @@ import { TranslateModule } from '@ngx-translate/core';
   ],
 })
 export class MenuComponent {
-  expanded: boolean = false;
-  @HostBinding('attr.aria-expanded') ariaExpanded = this.expanded;
-  @Input()
-  item!: NavItem;
+
+  @Input() item!: NavItem;
   @Input() depth: number = 0;
+  @Input() navItems: NavItem[] = [];
 
   constructor(public navService: MenuService) {
     if (this.depth === undefined) {
@@ -54,13 +52,19 @@ export class MenuComponent {
   }
 
   onItemSelected(item: NavItem) {
-    if (!item.Opciones || !item.Opciones.length) {
+
+
+    this.navService.collapseAllMenus();
+
+    if (!item.Opciones || item.Opciones.length === 0) {
       this.navService.updateOption(item);
       this.navService.closeNav();
       this.navService.goTo(item.Url?.replace('/pages', '') || '');
     }
-    if (item.Opciones && item.Opciones.length) {
-      this.expanded = !this.expanded;
+
+    if (item.Opciones && item.Opciones.length > 0) {
+      console.log(item);
+      item.expanded = !item.expanded;
     }
   }
 }
