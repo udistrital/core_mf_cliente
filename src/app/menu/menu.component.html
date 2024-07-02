@@ -15,7 +15,7 @@
         </span>
         }
     </div>
-    @if (item.expanded) {
+    @if (item.expanded && select) {
       <div class="separator" [@slideDown]></div>
       <div class="sub-menu" [@slideDown]>
           @for (

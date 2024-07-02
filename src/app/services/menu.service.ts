@@ -124,9 +124,9 @@ export class MenuService {
     const menuInfo = localStorage.getItem('menu');
     if (menuInfo) {
       const menu = JSON.parse(atob(menuInfo));
-      console.log(menu);
+      //console.log(menu);
       this.collapseMenusRecursive(menu); 
-      console.log(menu);
+      //console.log(menu);
       localStorage.setItem('menu', btoa(JSON.stringify(menu)));
       this.menuSubject.next(menu); 
       this.updateMenu(menu);

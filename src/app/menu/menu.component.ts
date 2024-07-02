@@ -40,7 +40,7 @@ import { TranslateModule } from '@ngx-translate/core';
   ],
 })
 export class MenuComponent {
-
+  select: any= false;
   @Input() item!: NavItem;
   @Input() depth: number = 0;
   @Input() navItems: NavItem[] = [];
@@ -61,10 +61,15 @@ export class MenuComponent {
       this.navService.closeNav();
       this.navService.goTo(item.Url?.replace('/pages', '') || '');
     }
+    
 
     if (item.Opciones && item.Opciones.length > 0) {
-      console.log(item);
-      item.expanded = !item.expanded;
+      //console.log(item.Id);
+      localStorage.setItem('select', JSON.stringify(item.Id));
+      if (item.Id == localStorage.getItem('select')) {
+        this.select=true
+        item.expanded = !item.expanded;
+      } 
     }
   }
 }
