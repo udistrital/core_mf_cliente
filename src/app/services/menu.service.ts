@@ -118,4 +118,28 @@ export class MenuService {
   public goTo(url: string) {
     this.router.navigate([url]);
   }
+
+  public collapseAllMenus() {
+    
+    const menuInfo = localStorage.getItem('menu');
+    if (menuInfo) {
+      const menu = JSON.parse(atob(menuInfo));
+      //console.log(menu);
+      this.collapseMenusRecursive(menu); 
+      //console.log(menu);
+      localStorage.setItem('menu', btoa(JSON.stringify(menu)));
+      this.menuSubject.next(menu); 
+      this.updateMenu(menu);
+    }
+  }  
+  
+  private collapseMenusRecursive(items: any[]) {
+    //console.log(items);
+    items.forEach(item => {
+      //onsole.log(item);
+      item.expanded = false; 
+    });
+  }
+  
+  
 }

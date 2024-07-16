@@ -17,6 +17,8 @@ import { HeaderComponent } from '../header/header.component';
 import { LoginComponent } from '../login/login.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { lang } from '../services/globals';
+
 
 // if (!("path" in Event.prototype))
 //   Object.defineProperty(Event.prototype, "path", {
@@ -142,6 +144,8 @@ export class OasComponent implements OnChanges {
         this.appMenu = appMenu;
         this.navItems = navItems;
         this.appname = appname;
+        lang.lang = TOKEN.REDIRECT_URL;
+        //console.log('Traducción', lang.lang);
         this.notificaciones = notificaciones;
         this.menuApps = menuApps;
         this.entorno = entorno;

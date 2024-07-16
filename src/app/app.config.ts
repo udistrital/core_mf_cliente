@@ -9,9 +9,14 @@ import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-br
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { environment } from '../environments/environment';
+import { OasComponent } from './oas/oas.component';
+import { ConfiguracionService } from './services/configuracion.service';
+import { lang } from './services/globals';
+
+
 
 export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, environment.apiUrl + 'assets/i18n/', '.json');
+  return new TranslateHttpLoader(http, lang.lang + 'assets/i18n/', '.json');
 }
 
 export const appConfig: ApplicationConfig = {
