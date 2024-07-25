@@ -3,14 +3,24 @@
         <p>Notificaciones</p>
     </div>
     <div class="notifications-container">
-        <div *ngIf="loading; else loadedContent"><ng-uui-load></ng-uui-load> </div>
+        <div *ngIf="loading; else loadedContent"><ng-uui-load></ng-uui-load></div>
         <ng-template #loadedContent>
-            <div *ngFor="let notificacion of notificaciones" (click)="redirect(notificacion)" class="notification-item">
-                <div class="notifications-text-container">
-                    <p>{{notificacion.Body.Message}}</p>
+            <div *ngIf="notificaciones.length > 0; else noNotifications">
+                <div *ngFor="let notificacion of notificaciones" 
+                    (click)="redirect(notificacion)" class="notification-item" [@cardAnimation]>
+                    <div class="notifications-text-container">
+                        <p>{{notificacion.mensaje}}</p>
+                        <span>{{timeAgo(notificacion.fecha_creacion)}}</span>
+                    </div>
+                    <div *ngIf="!notificacion.lectura" class="notification-badge"></div>
                 </div>
-                <div *ngIf="notificacion.Body.MessageAttributes.EstadoMensaje.Value == 'pendiente'" class="notification-badge"></div>
             </div>
+            <ng-template #noNotifications>
+                <div class="no-notifications">
+                    <span class="material-icons">verified</span>
+                    <p>No hay notificaciones nuevas</p>
+                  </div>
+            </ng-template>
         </ng-template>
     </div>
 </div>
