@@ -1,8 +1,3 @@
-// .aplicaciones_menu_container p {
-//     margin-bottom: 11px;
-//     margin-top: 0;
-// }
-
 // .menu-app {
 //     border-color: #34495e;
 //     border-radius: 7px;
@@ -11,6 +6,7 @@
 // }
 
 .title-notifications {
+    margin: 25px 0;
     text-align: center;
     font-family: "Open Sans", sans-serif;
     font-size: 22px;
@@ -47,10 +43,36 @@
 }
 
 .notifications-text-container p {
-    margin: 0;
+    margin: 5px 0;
     color: #7d7d7d;
     font-family: "Open Sans", sans-serif;
     font-size: 14px;
+}
+
+.notifications-text-container span {
+    font-size: 12px;
+    color: #b1b1b1;
+    font-weight: 400;
+    display: block;
+}
+
+.no-notifications {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+
+    span {
+        font-size: 80px;
+        margin: 15px;
+        cursor: default;
+        color: var(--color900);
+    }
+
+    p {
+        margin: 0;
+        font-size: 14px;
+    }
 }
 
 .aplicaciones_menu_container {

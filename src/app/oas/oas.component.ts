@@ -63,7 +63,6 @@ export class OasComponent implements OnChanges {
   notificaciones: boolean = false;
   menuApps: boolean = false;
   CONFIGURACION_SERVICE: any;
-  COLAS_NOTIFICACIONES: any;
   entorno: any;
   navItems: any;
   constructor(
@@ -96,7 +95,7 @@ export class OasComponent implements OnChanges {
             this.userInfoService = data.userInfoService;
             this.user.emit(data);
             if (this.notificaciones) {
-              this.notificacionesService.init(this.COLAS_NOTIFICACIONES, data, this.entorno);
+              this.notificacionesService.init(data);
             }
             if (this.menuApps) {
               this.menuAppService.init(
@@ -131,7 +130,6 @@ export class OasComponent implements OnChanges {
       if (changes.environment.currentValue !== undefined) {
         const {
           CONFIGURACION_SERVICE,
-          COLAS_NOTIFICACIONES,
           entorno,
           notificaciones,
           menuApps,
@@ -150,7 +148,6 @@ export class OasComponent implements OnChanges {
         this.menuApps = menuApps;
         this.entorno = entorno;
         this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
-        this.COLAS_NOTIFICACIONES = COLAS_NOTIFICACIONES;
         if (autenticacion) {
           this.autenticacionService.init(TOKEN);
           this.autenticacionService.login(true);
