@@ -4,7 +4,7 @@ export const environment = {
   CONFIGURACION_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/configuracion_crud_api/v1/',
 
   // Notificaciones
-  NOTIFICACION_MID_WS: "ws://autenticacion.portaloas.udistrital.edu.co/apioas/notificacion_mid/v1/ws",
+  NOTIFICACION_MID_WS: "wss://pruebasapi.intranetoas.udistrital.edu.co:8527/v1/ws",
   NOTIFICACIONES_CRUD: "https://autenticacion.portaloas.udistrital.edu.co/apioas/notificaciones_crud/",
 
   TOKEN: {

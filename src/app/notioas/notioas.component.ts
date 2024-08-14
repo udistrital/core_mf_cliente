@@ -31,7 +31,7 @@ import 'moment/locale/es';
 })
 export class NotioasComponent implements OnInit {  
   menuActivo: boolean = false;
-  loading: boolean = false;
+  loading: boolean = true;
   notificaciones: any[] = [];
 
   constructor(private router: Router, public notificacionesService: NotificacionesService) {
@@ -65,7 +65,7 @@ export class NotioasComponent implements OnInit {
     });
   }
 
-  redirect(notificacion:any) {
+  redirect(notificacion: any) {
     this.notificacionesService.changeStateToView(notificacion);
   }
 

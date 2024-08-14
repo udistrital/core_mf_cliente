@@ -9,18 +9,18 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class NotificacionesService {
-  public notificaciones: any[] = [];
+  public notificaciones: any = [];
   private notificacionesSubject = new Subject<any[]>();
   public notificaciones$ = this.notificacionesSubject.asObservable();
 
   public numPendientes: number = 0;
-  private numPendientesSubject = new BehaviorSubject(0);
+  private numPendientesSubject = new BehaviorSubject<number>(0);
   public numPendientes$ = this.numPendientesSubject.asObservable();
 
-  private menuActivoSubject = new BehaviorSubject(false);
+  private menuActivoSubject = new BehaviorSubject<boolean>(false);
   public menuActivo$ = this.menuActivoSubject.asObservable();
 
-  private loading = new BehaviorSubject(false);
+  private loading = new BehaviorSubject<boolean>(true);
   public loading$ = this.loading.asObservable();
 
   private notificacionSubject = new BehaviorSubject<any>(null);
@@ -164,13 +164,15 @@ export class NotificacionesService {
                 this.numPendientesSubject.next(this.numPendientes);
                 this.updateNotifications();
               }
+              this.loading.next(false);
             }, (error: any) => {
               console.error(error);
               this.loading.next(false);
             }
           )
+        } else {
+          this.loading.next(false);
         }
-        this.loading.next(false);
       }, (error: any) => {
         console.error(error);
         this.loading.next(false);
