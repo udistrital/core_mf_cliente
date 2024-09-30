@@ -32,7 +32,14 @@
             </mat-option>
             }
         </mat-select>
-
+        @if (notificaciones) {
+            <div class="header-button-notification" (click)="togglenotify()">
+                <span class="material-icons">notifications</span>
+                @if (!menuActivo && numPendientes > 0) {
+                    <div class="notification-badge">{{numPendientes <= 9 ? numPendientes : '+9'}}</div>
+                }
+            </div>
+        }
         <div class="header-button-user-container" (click)="toogleCerrarSesion()">
             <span class="material-icons"> account_circle </span>
             <p class="user-info">{{ username }}</p>
@@ -42,5 +49,6 @@
         </div>
     </div>
 </div>
+<ng-uui-notioas></ng-uui-notioas>
 <!-- <ng-uui-menu-aplicaciones></ng-uui-menu-aplicaciones> -->
 <!-- <ng-uui-load [hidden]="!load"></ng-uui-load> -->

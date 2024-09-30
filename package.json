@@ -27,6 +27,7 @@
     "@ngx-translate/core": "^15.0.0",
     "@ngx-translate/http-loader": "^8.0.0",
     "crypto-js": "^4.2.0",
+    "moment": "^2.30.1",
     "rxjs": "~7.8.1",
     "single-spa": ">=6.0.1",
     "single-spa-angular": "^9.0.1",

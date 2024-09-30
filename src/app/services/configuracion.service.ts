@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root',
 })
+
 export class ConfiguracionService {
   httpOptions: any;
   path: any;
@@ -35,6 +36,40 @@ export class ConfiguracionService {
           }
         })
       );
+  }
+
+  getWithoutPath(endpoint: string) {
+    this.httpOptions = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      }),
+    };
+    return this.http.get<any>(`${endpoint}`, this.httpOptions).pipe(
+      map((res) => {
+        if (res && res.hasOwnProperty('Body')) {
+          return res;
+        } else {
+          return res;
+        }
+      })
+    );
+  }
+
+  /**
+   * Perform a PUT http request
+   * @param endpoint service's end-point
+   * @param element data to send as JSON, With the id to UPDATE
+   * @returns Observable<any>
+   */
+  putWithoutPath(endpoint:string, element:any) {
+    this.httpOptions = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      }),
+    };
+    return this.http.put<any>(endpoint, element, this.httpOptions);
   }
 
   /**

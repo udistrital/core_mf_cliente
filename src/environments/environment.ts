@@ -1,9 +1,12 @@
 export const environment = {
   production: false,
   assets: 'https://pruebasassets.portaloas.udistrital.edu.co/',
-  CONFIGURACION_SERVICE:
-    'https://autenticacion.portaloas.udistrital.edu.co/apioas/configuracion_crud_api/v1/',
-  NOTIFICACION_SERVICE: 'wss://pruebasapi.portaloas.udistrital.edu.co:8116/ws',
+  CONFIGURACION_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/configuracion_crud_api/v1/',
+
+  // Notificaciones
+  NOTIFICACION_MID_WS: "ws://autenticacion.portaloas.udistrital.edu.co/apioas/notificacion_mid/v1/ws",
+  NOTIFICACIONES_CRUD: "https://autenticacion.portaloas.udistrital.edu.co/apioas/notificaciones_crud/",
+  
   TOKEN: {
     AUTORIZATION_URL: 'https://autenticacion.portaloas.udistrital.edu.co/oauth2/authorize',
     CLIENTE_ID: 'e36v1MPQk2jbz9KM4SmKhk8Cyw0a',
@@ -15,5 +18,5 @@ export const environment = {
     AUTENTICACION_MID: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/autenticacion_mid/v1/token/userRol',
   },
   TERCEROS_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/terceros_crud/v1/',
-  apiUrl: 'http://localhost:4201/',
+  apiUrl: 'https://pruebascoreclientes.portaloas.udistrital.edu.co/',
 };

@@ -4,6 +4,7 @@ export interface NavItem {
     Nombre: string;
     Icono?: string;
     Url?: string;
+    expanded?: boolean;
     TipoOpcion?: string;
     Opciones?: NavItem[];
 }
