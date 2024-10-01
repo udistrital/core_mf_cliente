@@ -15,16 +15,15 @@
         </span>
         }
     </div>
-    @if (item.expanded && select) {
-      <div class="separator" [@slideDown]></div>
-      <div class="sub-menu" [@slideDown]>
-          @for (
-          child of item.Opciones; track $index) {
-          <ng-uui-menu  [item]="child" [depth]="depth+1">
-          </ng-uui-menu>
-          }
-      
-      </div>
-      }
 </mat-list-item>
 
+@if (item.expanded && select) {
+<div class="separator" [@slideDown]></div>
+<div class="sub-menu" [@slideDown]>
+    @for (
+    child of item.Opciones; track $index) {
+    <ng-uui-menu [item]="child" [depth]="depth+1">
+    </ng-uui-menu>
+    }
+</div>
+}
