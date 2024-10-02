@@ -1,0 +1,19 @@
+<!-- <div id="menu" [ngClass]="{'aplicaciones_menu_container': true, 'menu_is_active': activo }">
+    <div class="container-aplicativos">
+        @for (categoria of menuService.eventFilter$ | async; track $index) {
+        <article class="card">
+            <div class="title-app-menu-div" [ngStyle]="{'background-color': categoria['color']}">
+                <h5 class="categoria-title">{{categoria['nombre']}}</h5>
+            </div>
+            <div class="app-image-container">
+                @for (aplicacion of categoria['aplicaciones']; track $index) {
+                <div class="image-application" (click)="redirect(aplicacion.url)">
+                    <img src="{{aplicacion.estilo?basePathAssets + 'isotipos_aplicativos_svg/' + aplicacion.estilo + '.svg':''}}"
+                        class="isotipo" />
+                </div>
+                }
+            </div>
+        </article>
+        }
+    </div>
+</div> -->

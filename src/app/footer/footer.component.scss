@@ -1,0 +1,128 @@
+/* footer styles */
+
+#footer {
+    width: 100%;
+    position: relative;
+}
+
+.footer-div {
+    background-color: white;
+    color: var(--primary);
+    max-height: 74px;
+    min-height: 72px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1%;
+    box-shadow: 0 0.5rem 1rem 1rem rgba(44,51,73,0.1);
+    z-index: 1;
+  }
+
+.container-footer {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    z-index: 10;
+}
+
+.container-footer-off {
+    width: 85%;
+}
+
+.footer-div .imageContainer {
+    object-fit: cover;
+    padding-right: 5px;
+    margin-block-end: 0;
+    margin-block-start: 0;
+}
+.text-container {
+    align-self: center;
+}
+.card-image {
+    width: 220px;
+}
+
+.footer-column {
+    color: black;
+    width: 10%;
+    align-self: center;
+    margin-right: 3%;
+    border-left: 0.1rem solid var(--primary);
+}
+
+.footer-title {
+    text-align: center;
+    font-family: "Open Sans";
+    margin-bottom: 0.5rem;
+    font-size: 13px;
+    margin-top: 0;
+    color: black;
+}
+
+.footer-logos {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 65%;
+}
+.social, .social > a {
+    display: flex;
+    color: var(--primary);
+    text-decoration: none;
+    justify-content: center;
+    width: 18%;
+    align-self: center;
+}
+.icon-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.icon {
+    font-size: 32px;
+    align-self: center;
+    margin-right: 10px;
+}
+.text-container > p {
+    font-size: 13px;
+    text-align: center;
+    margin: 0;
+    font-family: "Open Sans";
+}
+
+
+
+@media screen and (max-width: 1440px) {
+    .social {
+        width: 10%;
+    }
+
+    .footer-logos {
+        width: 50%;
+    }
+
+    .text-container > p  {
+        display: none;
+    }
+}
+@media screen and (max-width: 1024px) {
+
+    .footer-logos {
+        width: 45%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .imageContainer {
+        display: none;
+    }
+
+    .footer-column {
+        display: none;
+    }
+
+    .footer-logos {
+        width: 100%;
+    }
+}

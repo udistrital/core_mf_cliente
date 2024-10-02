@@ -1,0 +1,94 @@
+:host {
+    display: block;
+    outline: none;
+}
+
+:host .mat-list-item.active {
+    background-color: var(--color100);
+    color: var(--primary);
+}
+
+:host:hover > .mat-list-item:not(.expanded),
+:host:focus > .mat-list-item:not(.expanded) {
+    background-color: var(--color100) !important;
+    color: var(--primary);
+}
+
+.mat-list-item.active {
+    background-color: var(--color100);
+    color: var(--primary);
+}
+
+.mat-list-item {
+    padding: 0 0;
+    background-color: var(--primary);
+    color: var(--color100);
+    font-family: "Open Sans";
+    font-size: 1em;
+}
+
+.mat-list-item-content {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+.mat-list-item .display-name {
+    width: 34ex;
+    padding-left: 15px;
+}
+
+@media screen and (max-width: 425px) {
+    .mat-list-item .display-name {
+        width: 75vw;
+    }
+}
+
+.display-name {
+    padding-left: 0.5rem;
+}
+
+.item-content {
+    display: flex;
+    align-items: center; /* Alinear verticalmente el contenido del ítem */
+    justify-content: space-between;
+    padding-bottom: 0.5rem; /* Ajusta este valor según sea necesario */
+    padding-top: 0.5rem; /* Ajusta este valor según sea necesario */
+    transition: all 1s; /* Agrega transición para el hover */
+    padding-left: 1rem;
+    width: 20rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.item-content:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+
+.arrow-container {
+    display: flex;
+    align-items: center; /* Alinear verticalmente las flechas */
+}
+
+.sub-menu {
+    padding-left: 20px; /* Ajusta este valor según sea necesario */
+    position: relative; /* Agrega posición relativa para que los íconos de flecha se posicionen correctamente */
+    background-color: var(--color900);
+}
+
+
+.left {
+    display: flex;
+    align-items: left; /* Alinear verticalmente el contenido del ítem */
+    justify-content: space-between;
+}
+
+.separator {
+    width: 100%;
+    height: 1px;
+    background-color: white;
+    margin: 5px 0;
+}

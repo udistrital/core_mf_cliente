@@ -1,0 +1,26 @@
+<div id="menu" [ngClass]="{'aplicaciones_menu_container': true, 'menu_is_active': menuActivo }">
+    <div class="title-notifications">
+        <p>Notificaciones</p>
+    </div>
+    <div class="notifications-container">
+        <div *ngIf="loading; else loadedContent"><ng-uui-load></ng-uui-load></div>
+        <ng-template #loadedContent>
+            <div *ngIf="notificaciones.length > 0; else noNotifications">
+                <div *ngFor="let notificacion of notificaciones" 
+                    (click)="redirect(notificacion)" class="notification-item" [@cardAnimation]>
+                    <div class="notifications-text-container">
+                        <p>{{notificacion.mensaje}}</p>
+                        <span>{{timeAgo(notificacion.fecha_creacion)}}</span>
+                    </div>
+                    <div *ngIf="!notificacion.lectura" class="notification-badge"></div>
+                </div>
+            </div>
+            <ng-template #noNotifications>
+                <div class="no-notifications">
+                    <span class="material-icons">verified</span>
+                    <p>No hay notificaciones nuevas</p>
+                  </div>
+            </ng-template>
+        </ng-template>
+    </div>
+</div>
