@@ -9,6 +9,7 @@ import { fromEvent } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { getCookie } from './header/header.component';
 import { ControlSizeContainerService } from './services/controlSizeContainer.service';
+import { ImplicitAutenticationService } from './services/implicit_autentication.service';
 
 @Component({
   selector: 'core-mf',
@@ -26,7 +27,8 @@ export class AppComponent implements OnInit {
   constructor(
     private menuService: MenuService,
     private controlSizeContainerService: ControlSizeContainerService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private autenticacionService: ImplicitAutenticationService
   ) {
     singleSpaPropsSubject.subscribe((props) => {
       // TODO: Ver la manera de usar esta info que viene del root
