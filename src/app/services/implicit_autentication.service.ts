@@ -27,6 +27,8 @@ export class ImplicitAutenticationService {
   private logoutSubject = new BehaviorSubject('');
   public logout$ = this.logoutSubject.asObservable();
 
+  private eventoCerrarSesionRegistrado = false; // Bandera para rastrear el registro del evento
+
   httpOptions: any;
   constructor(private httpClient: HttpClient) {
     document.addEventListener('visibilitychange', () => {
@@ -35,7 +37,32 @@ export class ImplicitAutenticationService {
         this.autologout(expires);
       }
     });
+    this.añadirEventoParaCerrarSesion();
   }
+  
+  ngOnDestroy() {
+    this.removerEventoParaCerrarSesion();
+  }
+
+  private añadirEventoParaCerrarSesion() {
+    if (!this.eventoCerrarSesionRegistrado) {
+      window.addEventListener('cerrar-sesion-mf', this.handleCerrarSesion);
+      this.eventoCerrarSesionRegistrado = true; // Marcar el evento como registrado
+    }
+  }
+
+  private removerEventoParaCerrarSesion() {
+    if (this.eventoCerrarSesionRegistrado) {
+      window.removeEventListener('cerrar-sesion-mf', this.handleCerrarSesion);
+      this.eventoCerrarSesionRegistrado = false; // Marcar el evento como no registrado
+    }
+  }
+
+  private handleCerrarSesion = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    this.logout('action-event');
+  };
+
   init(entorno: any): any {
     this.environment = entorno;
     const id_token = window.localStorage.getItem('id_token');
