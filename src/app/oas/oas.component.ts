@@ -65,6 +65,7 @@ export class OasComponent implements OnChanges {
   CONFIGURACION_SERVICE: any;
   entorno: any;
   navItems: any;
+  tienePermiso: boolean = false;
   constructor(
     private confService: ConfiguracionService,
     private notificacionesService: NotificacionesService,
@@ -103,13 +104,19 @@ export class OasComponent implements OnChanges {
                 data
               );
             }
-            this.username = data.user
-              ? data.user.email
-                ? data.user.email
-                : ''
-              : '';
+            this.username = data.user?.email ?? '';
+            const rolesPermitidos = [
+              'ESTUDIANTE',
+              'DOCENTE',
+              'DECANO',
+              'COORDINADOR',
+              'ADMIN_DOCENCIA',
+              'ADMIN_SGA'
+            ];
+            const tieneRolValido = data.userService.role.some((rol: any) => rolesPermitidos.includes(rol));
+            this.tienePermiso = tieneRolValido;
             this.isLogin = true;
-            this.isloading = true;
+            this.cdr.detectChanges();
           } else {
             this.isLogin = false;
             setTimeout(() => { this.isloading ? this.isloading = false : this.isloading = true }, 2500)
