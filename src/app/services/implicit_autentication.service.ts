@@ -4,6 +4,7 @@ import { Md5 } from 'ts-md5';
 import { BehaviorSubject, Subscription, of } from 'rxjs';
 import Swal from 'sweetalert2';
 import { delay, retry } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -63,56 +64,38 @@ export class ImplicitAutenticationService {
     this.logout('action-event');
   };
 
-  init(entorno: any): any {
+  async init(entorno: any): Promise<void> {
     this.environment = entorno;
     const id_token = window.localStorage.getItem('id_token');
     if (id_token === null) {
-      var params: { [k: string]: any } = {},
-        queryString = location.hash.substring(1),
-        regex = /([^&=]+)=([^&]*)/g;
+      const params: { [k: string]: any } = {};
+      const queryString = location.hash.substring(1);
+      const regex = /([^&=]+)=([^&]*)/g;
       let m;
       while ((m = regex.exec(queryString))) {
         params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
       }
-      // And send the token over to the server
-      const req = new XMLHttpRequest();
-      // consider using POST so query isn't logged
-      const query = 'https://' + window.location.host + '?' + queryString;
-      req.open('GET', query, true);
+
       if (!!params['id_token']) {
-        //if token setear
         const id_token_array = params['id_token'].split('.');
         const payload = JSON.parse(atob(id_token_array[1]));
         window.localStorage.setItem('access_token', params['access_token']);
         window.localStorage.setItem('expires_in', params['expires_in']);
         window.localStorage.setItem('state', params['state']);
         window.localStorage.setItem('id_token', params['id_token']);
-        // this.userSubject.next({ user: payload });
         this.httpOptions = {
           headers: new HttpHeaders({
             Accept: 'application/json',
             Authorization: `Bearer ${params['access_token']}`,
           }),
         };
-        this.updateAuth(payload);
-      } else {
-        //this.clearStorage();
+        await this.updateAuth(payload);
       }
-      req.onreadystatechange = function (e) {
-        if (req.readyState === 4) {
-          if (req.status === 200) {
-            // window.location = params.state;
-          } else if (req.status === 400) {
-            window.alert('There was an error processing the token.');
-          } else {
-          }
-        }
-      };
     } else {
-      const id_token = window.localStorage.getItem('id_token')?.split('.');
-      if (id_token != undefined) {
-        const payload = JSON.parse(atob(id_token[1]));
-        this.updateAuth(payload);
+      const id_token_parts = id_token?.split('.');
+      if (id_token_parts) {
+        const payload = JSON.parse(atob(id_token_parts[1]));
+        await this.updateAuth(payload);
       }
     }
     const expires = this.setExpiresAt();
@@ -120,84 +103,65 @@ export class ImplicitAutenticationService {
     this.clearUrl();
   }
 
-  updateAuth(payload: any) {
+  async updateAuth(payload: any): Promise<void> {
     const user = localStorage.getItem('user');
     if (user) {
       this.userSubject.next(JSON.parse(atob(user)));
-    } else {
-      this.httpOptions = {
-        headers: new HttpHeaders({
-          Accept: 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        }),
-      };
-      const userTemp = payload.email;
-      this.user = { user: userTemp };
-      this.httpClient
-        .post<any>(
-          this.environment.AUTENTICACION_MID,
-          {
-            user: payload.email,
-          },
-          this.httpOptions
-        )
-        .pipe(retry(3))
-        .subscribe(
-          (res: any) => {
-            this.clearUrl();
-
-            const userPayload = { user: payload };
-            const userServiceResponse = { userService: res };
-
-            // Verificar y asignar el rol predeterminado "ASPIRANTE" si los roles están vacíos
-            if (
-              !userServiceResponse.userService.role ||
-              userServiceResponse.userService.role.length === 0
-            ) {
-              userServiceResponse.userService.role = ['ASPIRANTE'];
-            } else {
-              // Definir los roles permitidos
-              const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
-
-              // Verificar si tiene roles diferentes a los permitidos
-              const hasDisallowedRoles =
-                userServiceResponse.userService.role.some(
-                  (role:any) => !allowedRoles.includes(role)
-                );
-
-              // Si no tiene roles diferentes a los permitidos, agregar "ASPIRANTE"
-              if (
-                !hasDisallowedRoles &&
-                !userServiceResponse.userService.role.includes('ASPIRANTE')
-              ) {
-                userServiceResponse.userService.role.push('ASPIRANTE');
-              }
-            }
-
-            localStorage.setItem(
-              'user',
-              btoa(
-                JSON.stringify({
-                  ...userPayload,
-                  ...userServiceResponse,
-                })
-              )
-            );
-
-            this.userSubject.next({
-              ...{ user: payload },
-              ...{ userService: res },
-            });
-          },
-          (error) => console.log(error)
-        );
-      this.httpOptions = {
-        headers: new HttpHeaders({
-          Accept: 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        }),
-      };
+      return;
     }
+    const userTemp = payload.email;
+    this.user = { user: userTemp };
+
+    try {
+      const res = await firstValueFrom(
+        this.httpClient.post<any>(
+          this.environment.AUTENTICACION_MID,
+          { user: payload.email },
+          this.getHttpOptions()
+        )
+      );
+      this.clearUrl();
+      const userPayload = { user: payload };
+      const userServiceResponse = { userService: res };
+      if (
+        !userServiceResponse.userService.role ||
+        userServiceResponse.userService.role.length === 0
+      ) {
+        userServiceResponse.userService.role = ['ASPIRANTE'];
+      } else {
+        const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
+        const hasDisallowedRoles = userServiceResponse.userService.role.some(
+          (role: any) => !allowedRoles.includes(role)
+        );
+        if (
+          !hasDisallowedRoles &&
+          !userServiceResponse.userService.role.includes('ASPIRANTE')
+        ) {
+          userServiceResponse.userService.role.push('ASPIRANTE');
+        }
+      }
+      localStorage.setItem(
+        'user',
+        btoa(JSON.stringify({ ...userPayload, ...userServiceResponse }))
+      );
+      this.userSubject.next({
+        ...{ user: payload },
+        ...{ userService: res },
+      });
+    } catch (error) {
+      console.error('Error en updateAuth:', error);
+      throw error;
+    }
+  }
+
+  private getHttpOptions(): { headers: HttpHeaders; observe: 'body' } {
+    return {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      }),
+      observe: 'body' as const
+    };
   }
 
   public logout(action: any): void {

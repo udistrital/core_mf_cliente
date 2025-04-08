@@ -84,50 +84,39 @@ export class OasComponent implements OnChanges {
       }
     });
     this.autenticacionService.user$.subscribe((data: any) => {
-      if (JSON.stringify(data) !== '{}') {
-        setTimeout(() => {
-          if (
-            data.user &&
-            data.userService &&
-            !this.userInfo &&
-            !this.userInfoService
-          ) {
-            this.userInfo = data.user;
-            this.userInfoService = data.userInfoService;
-            this.user.emit(data);
-            if (this.notificaciones) {
-              this.notificacionesService.init(data);
-            }
-            if (this.menuApps) {
-              this.menuAppService.init(
-                catalogo[this.entorno as keyof typeof catalogo],
-                data
-              );
-            }
-            this.username = data.user?.email ?? '';
-            const rolesPermitidos = [
-              'ESTUDIANTE',
-              'DOCENTE',
-              'DECANO',
-              'COORDINADOR',
-              'ADMIN_DOCENCIA',
-              'ADMIN_SGA'
-            ];
-            const tieneRolValido = data.userService.role.some((rol: any) => rolesPermitidos.includes(rol));
-            this.tienePermiso = tieneRolValido;
-            this.isLogin = true;
-            this.cdr.detectChanges();
-          } else {
-            this.isLogin = false;
-            setTimeout(() => { this.isloading ? this.isloading = false : this.isloading = true }, 2500)
-          }
-        }, 100);
+      if (data?.user && data?.userService) {
+        this.userInfo = data.user;
+        this.userInfoService = data.userService;
+        this.user.emit(data);
+
+        if (this.notificaciones) {
+          this.notificacionesService.init(data);
+        }
+
+        if (this.menuApps) {
+          this.menuAppService.init(
+            catalogo[this.entorno as keyof typeof catalogo],
+            data
+          );
+        }
+
+        this.username = data.user?.email ?? '';
+
+        const rolesPermitidos = [
+          'ESTUDIANTE', 'DOCENTE', 'DECANO', 'COORDINADOR', 'ADMIN_DOCENCIA', 'ADMIN_SGA'
+        ];
+        const tieneRolValido = data.userService.role?.some((rol: any) =>
+          rolesPermitidos.includes(rol)
+        );
+
+        this.tienePermiso = !!tieneRolValido;
+        this.isLogin = true;
+        this.isloading = false;
+        this.cdr.detectChanges();
       } else {
         this.isLogin = false;
-        this.isloading = true;
-        setTimeout(() => {
-          this.isloading ? (this.isloading = false) : (this.isloading = true);
-        }, 2500);
+        this.tienePermiso = false;
+        this.isloading = false;
       }
     });
   }
@@ -156,8 +145,17 @@ export class OasComponent implements OnChanges {
         this.entorno = entorno;
         this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
         if (autenticacion) {
-          this.autenticacionService.init(TOKEN);
-          this.autenticacionService.login(true);
+          this.isloading = true;
+          this.autenticacionService.init(TOKEN)
+            .then(() => {
+              this.autenticacionService.login(true);
+            })
+            .catch((error) => {
+              console.error('Fallo autenticación:', error);
+            })
+            .finally(() => {
+              this.isloading = false;
+            });
         }
       }
     }
