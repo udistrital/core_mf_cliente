@@ -171,6 +171,9 @@ export class OasComponent implements OnChanges {
     this.autenticacionService.logout('action-event');
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    if (this.environment) {
+      this.procesarEnvironment(this.environment);
+    }
   }
 }
