@@ -208,6 +208,7 @@ export class ImplicitAutenticationService {
 
   // el flag es un booleano que define si habrá boton de login
   public login(flag: any): boolean {
+    console.log("flag login: ",flag)
     if (
       window.localStorage.getItem('id_token') === 'undefined' ||
       window.localStorage.getItem('id_token') === null ||

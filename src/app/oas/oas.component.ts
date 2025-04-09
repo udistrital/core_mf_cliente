@@ -120,11 +120,12 @@ export class OasComponent implements OnChanges {
       }
     });
   }
-
+  
   ngOnChanges(changes: any): void {
-    // if (changes.environment?.currentValue) {
-    //   this.procesarEnvironment(changes.environment.currentValue);
-    // }
+    if (changes.environment?.currentValue !== undefined) {
+      console.log("Cambios", changes.environment.currentValue);
+      this.procesarEnvironment(changes.environment.currentValue);
+    }
   }
 
   private async procesarEnvironment(env: any): Promise<void> {
@@ -172,8 +173,8 @@ export class OasComponent implements OnChanges {
   }
 
   ngOnInit(): void {
-    if (this.environment) {
-      this.procesarEnvironment(this.environment);
-    }
+    // if (this.environment) {
+    //   this.procesarEnvironment(this.environment);
+    // }
   }
 }
