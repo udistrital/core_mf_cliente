@@ -122,41 +122,43 @@ export class OasComponent implements OnChanges {
   }
 
   ngOnChanges(changes: any): void {
-    if (changes.environment !== undefined) {
-      if (changes.environment.currentValue !== undefined) {
-        const {
-          CONFIGURACION_SERVICE,
-          entorno,
-          notificaciones,
-          menuApps,
-          appMenu,
-          navItems,
-          appname,
-          autenticacion,
-          TOKEN,
-        } = changes.environment.currentValue;
-        this.appMenu = appMenu;
-        this.navItems = navItems;
-        this.appname = appname;
-        lang.lang = TOKEN.REDIRECT_URL;
-        //console.log('Traducción', lang.lang);
-        this.notificaciones = notificaciones;
-        this.menuApps = menuApps;
-        this.entorno = entorno;
-        this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
-        if (autenticacion) {
-          this.isloading = true;
-          this.autenticacionService.init(TOKEN)
-            .then(() => {
-              this.autenticacionService.login(true);
-            })
-            .catch((error) => {
-              console.error('Fallo autenticación:', error);
-            })
-            .finally(() => {
-              this.isloading = false;
-            });
-        }
+    if (changes.environment?.currentValue) {
+      this.procesarEnvironment(changes.environment.currentValue);
+    }
+  }
+
+  private async procesarEnvironment(env: any): Promise<void> {
+    const {
+      CONFIGURACION_SERVICE,
+      entorno,
+      notificaciones,
+      menuApps,
+      appMenu,
+      navItems,
+      appname,
+      autenticacion,
+      TOKEN,
+    } = env;
+
+    this.appMenu = appMenu;
+    this.navItems = navItems;
+    this.appname = appname;
+    lang.lang = TOKEN.REDIRECT_URL;
+
+    this.notificaciones = notificaciones;
+    this.menuApps = menuApps;
+    this.entorno = entorno;
+    this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
+
+    if (autenticacion) {
+      this.isloading = true;
+      try {
+        await this.autenticacionService.init(TOKEN);
+        this.autenticacionService.login(true);
+      } catch (error) {
+        console.error('Fallo autenticación:', error);
+      } finally {
+        this.isloading = false;
       }
     }
   }
