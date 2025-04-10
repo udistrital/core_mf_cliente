@@ -5,7 +5,7 @@ import {
   Input,
   OnChanges,
   Output,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { ConfiguracionService } from '../services/configuracion.service';
 import { ImplicitAutenticationService } from '../services/implicit_autentication.service';
@@ -52,20 +52,22 @@ export class OasComponent implements OnChanges {
   @Output('logout') logout: EventEmitter<any> = new EventEmitter();
   // tslint:disable-next-line: no-input-rename
   @Input('environment') environment: any;
-  opened: boolean = false;
+  private entornoListo = false;
+  CONFIGURACION_SERVICE: any;
+  opened = false;
   isLogin = false;
+  isloading = false;
+  tienePermiso = false;
   userInfo = null;
   userInfoService = null;
-  appname: string = '';
-  appMenu: string = '';
-  username: string = '';
-  isloading: boolean = false;
-  notificaciones: boolean = false;
-  menuApps: boolean = false;
-  CONFIGURACION_SERVICE: any;
+  username = '';
   entorno: any;
   navItems: any;
-  tienePermiso: boolean = false;
+  appname = '';
+  appMenu = '';
+  notificaciones = false;
+  menuApps = false;
+
   constructor(
     private confService: ConfiguracionService,
     private notificacionesService: NotificacionesService,
@@ -83,28 +85,76 @@ export class OasComponent implements OnChanges {
         this.logout.emit(logoutEvent);
       }
     });
+  }
+
+  ngOnChanges(changes: any): void {
+    const nuevoEnv = changes.environment?.currentValue;
+    if (nuevoEnv) {
+      this.procesarEnvironment(nuevoEnv);
+    }
+  }
+
+  private async procesarEnvironment(env: any): Promise<void> {
+    const {
+      CONFIGURACION_SERVICE,
+      entorno,
+      notificaciones,
+      menuApps,
+      appMenu,
+      navItems,
+      appname,
+      autenticacion,
+      TOKEN
+    } = env;
+
+    // Seteo de variables de entorno
+    this.appMenu = appMenu;
+    this.navItems = navItems;
+    this.appname = appname;
+    this.entorno = entorno;
+    this.notificaciones = notificaciones;
+    this.menuApps = menuApps;
+    this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
+    lang.lang = TOKEN.REDIRECT_URL;
+    this.entornoListo = true;
+    this.isloading = true;
+
+    try {
+      if (autenticacion) {
+        await this.autenticacionService.init(TOKEN);
+        this.autenticacionService.login(true);
+        this.suscribirUsuario();
+      }
+    } catch (error) {
+      console.error('Fallo autenticación:', error);
+    } finally {
+      this.isloading = false;
+    }
+  }
+
+  private suscribirUsuario(): void {
     this.autenticacionService.user$.subscribe((data: any) => {
+      if (!this.entornoListo) return;
+
       if (data?.user && data?.userService) {
         this.userInfo = data.user;
         this.userInfoService = data.userService;
+        this.username = data.user?.email ?? '';
         this.user.emit(data);
 
         if (this.notificaciones) {
           this.notificacionesService.init(data);
         }
 
-        if (this.menuApps) {
-          this.menuAppService.init(
-            catalogo[this.entorno as keyof typeof catalogo],
-            data
-          );
+        if (this.menuApps && this.entorno) {
+          const catalogoEntorno = catalogo[this.entorno as keyof typeof catalogo];
+          this.menuAppService.init(catalogoEntorno, data);
         }
-
-        this.username = data.user?.email ?? '';
 
         const rolesPermitidos = [
           'ESTUDIANTE', 'DOCENTE', 'DECANO', 'COORDINADOR', 'ADMIN_DOCENCIA', 'ADMIN_SGA'
         ];
+
         const tieneRolValido = data.userService.role?.some((rol: any) =>
           rolesPermitidos.includes(rol)
         );
@@ -120,55 +170,12 @@ export class OasComponent implements OnChanges {
       }
     });
   }
-  
-  ngOnChanges(changes: any): void {
-    if (changes.environment?.currentValue !== undefined) {
-      console.log("Cambios", changes.environment.currentValue);
-      this.procesarEnvironment(changes.environment.currentValue);
-    }
-  }
 
-  private async procesarEnvironment(env: any): Promise<void> {
-    const {
-      CONFIGURACION_SERVICE,
-      entorno,
-      notificaciones,
-      menuApps,
-      appMenu,
-      navItems,
-      appname,
-      autenticacion,
-      TOKEN,
-    } = env;
-
-    this.appMenu = appMenu;
-    this.navItems = navItems;
-    this.appname = appname;
-    lang.lang = TOKEN.REDIRECT_URL;
-
-    this.notificaciones = notificaciones;
-    this.menuApps = menuApps;
-    this.entorno = entorno;
-    this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
-
-    if (autenticacion) {
-      this.isloading = true;
-      try {
-        await this.autenticacionService.init(TOKEN);
-        this.autenticacionService.login(true);
-      } catch (error) {
-        console.error('Fallo autenticación:', error);
-      } finally {
-        this.isloading = false;
-      }
-    }
-  }
-
-  loginEvent() {
+  loginEvent(): void {
     this.autenticacionService.getAuthorizationUrl();
   }
 
-  logoutEvent() {
+  logoutEvent(): void {
     this.autenticacionService.logout('action-event');
   }
 
