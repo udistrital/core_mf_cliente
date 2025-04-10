@@ -1,14 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Md5 } from 'ts-md5';
-import { BehaviorSubject, Subscription, of } from 'rxjs';
+import { BehaviorSubject, Subscription, of, firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { delay, retry } from 'rxjs/operators';
-import { firstValueFrom } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ImplicitAutenticationService {
   environment: any;
   logoutUrl: any;
@@ -16,8 +13,8 @@ export class ImplicitAutenticationService {
   payload: any;
   timeActiveAlert: number = 4000;
   private user: any;
-  private timeLogoutBefore = 1000; // logout before in miliseconds
-  private timeAlert = 300000; // alert in miliseconds 5 minutes
+  private timeLogoutBefore = 1000;
+  private timeAlert = 300000;
 
   private userSubject = new BehaviorSubject({});
   public user$ = this.userSubject.asObservable();
@@ -28,9 +25,8 @@ export class ImplicitAutenticationService {
   private logoutSubject = new BehaviorSubject('');
   public logout$ = this.logoutSubject.asObservable();
 
-  private eventoCerrarSesionRegistrado = false; // Bandera para rastrear el registro del evento
+  private eventoCerrarSesionRegistrado = false;
 
-  httpOptions: any;
   constructor(private httpClient: HttpClient) {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
@@ -40,7 +36,7 @@ export class ImplicitAutenticationService {
     });
     this.añadirEventoParaCerrarSesion();
   }
-  
+
   ngOnDestroy() {
     this.removerEventoParaCerrarSesion();
   }
@@ -48,56 +44,52 @@ export class ImplicitAutenticationService {
   private añadirEventoParaCerrarSesion() {
     if (!this.eventoCerrarSesionRegistrado) {
       window.addEventListener('cerrar-sesion-mf', this.handleCerrarSesion);
-      this.eventoCerrarSesionRegistrado = true; // Marcar el evento como registrado
+      this.eventoCerrarSesionRegistrado = true;
     }
   }
 
   private removerEventoParaCerrarSesion() {
     if (this.eventoCerrarSesionRegistrado) {
       window.removeEventListener('cerrar-sesion-mf', this.handleCerrarSesion);
-      this.eventoCerrarSesionRegistrado = false; // Marcar el evento como no registrado
+      this.eventoCerrarSesionRegistrado = false;
     }
   }
 
-  private handleCerrarSesion = (event: Event) => {
-    const customEvent = event as CustomEvent;
+  private handleCerrarSesion = (_event: Event) => {
     this.logout('action-event');
   };
 
   async init(entorno: any): Promise<void> {
     this.environment = entorno;
     const id_token = window.localStorage.getItem('id_token');
-    if (id_token === null) {
+
+    if (!id_token) {
       const params: { [k: string]: any } = {};
-      const queryString = location.hash.substring(1);
       const regex = /([^&=]+)=([^&]*)/g;
+      const queryString = location.hash.substring(1);
       let m;
       while ((m = regex.exec(queryString))) {
         params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
       }
 
-      if (!!params['id_token']) {
+      if (params['id_token']) {
         const id_token_array = params['id_token'].split('.');
         const payload = JSON.parse(atob(id_token_array[1]));
-        window.localStorage.setItem('access_token', params['access_token']);
-        window.localStorage.setItem('expires_in', params['expires_in']);
-        window.localStorage.setItem('state', params['state']);
-        window.localStorage.setItem('id_token', params['id_token']);
-        this.httpOptions = {
-          headers: new HttpHeaders({
-            Accept: 'application/json',
-            Authorization: `Bearer ${params['access_token']}`,
-          }),
-        };
+        localStorage.setItem('access_token', params['access_token']);
+        localStorage.setItem('expires_in', params['expires_in']);
+        localStorage.setItem('state', params['state']);
+        localStorage.setItem('id_token', params['id_token']);
+
         await this.updateAuth(payload);
       }
     } else {
-      const id_token_parts = id_token?.split('.');
-      if (id_token_parts) {
+      const id_token_parts = id_token.split('.');
+      if (id_token_parts?.length === 3) {
         const payload = JSON.parse(atob(id_token_parts[1]));
         await this.updateAuth(payload);
       }
     }
+
     const expires = this.setExpiresAt();
     this.autologout(expires);
     this.clearUrl();
@@ -109,8 +101,6 @@ export class ImplicitAutenticationService {
       this.userSubject.next(JSON.parse(atob(user)));
       return;
     }
-    const userTemp = payload.email;
-    this.user = { user: userTemp };
 
     try {
       const res = await firstValueFrom(
@@ -120,34 +110,29 @@ export class ImplicitAutenticationService {
           this.getHttpOptions()
         )
       );
+
       this.clearUrl();
+
       const userPayload = { user: payload };
       const userServiceResponse = { userService: res };
-      if (
-        !userServiceResponse.userService.role ||
-        userServiceResponse.userService.role.length === 0
-      ) {
-        userServiceResponse.userService.role = ['ASPIRANTE'];
+
+      if (!res.role || res.role.length === 0) {
+        res.role = ['ASPIRANTE'];
       } else {
         const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
-        const hasDisallowedRoles = userServiceResponse.userService.role.some(
-          (role: any) => !allowedRoles.includes(role)
-        );
-        if (
-          !hasDisallowedRoles &&
-          !userServiceResponse.userService.role.includes('ASPIRANTE')
-        ) {
-          userServiceResponse.userService.role.push('ASPIRANTE');
+        const hasDisallowedRoles = res.role.some((role: any) => !allowedRoles.includes(role));
+
+        if (!hasDisallowedRoles && !res.role.includes('ASPIRANTE')) {
+          res.role.push('ASPIRANTE');
         }
       }
+
       localStorage.setItem(
         'user',
         btoa(JSON.stringify({ ...userPayload, ...userServiceResponse }))
       );
-      this.userSubject.next({
-        ...{ user: payload },
-        ...{ userService: res },
-      });
+
+      this.userSubject.next({ ...userPayload, ...userServiceResponse });
     } catch (error) {
       console.error('Error en updateAuth:', error);
       throw error;
@@ -164,15 +149,27 @@ export class ImplicitAutenticationService {
     };
   }
 
+  public login(flag: any): boolean {
+    if (
+      localStorage.getItem('id_token') === 'undefined' ||
+      localStorage.getItem('id_token') === null ||
+      this.logoutValid()
+    ) {
+      if (!flag) {
+        this.getAuthorizationUrl();
+      }
+      return false;
+    }
+    return true;
+  }
+
   public logout(action: any): void {
     const state = localStorage.getItem('state');
     const idToken = localStorage.getItem('id_token');
-    if (!!state && !!idToken) {
-      this.logoutUrl = this.environment.SIGN_OUT_URL;
-      this.logoutUrl += '?id_token_hint=' + idToken;
-      this.logoutUrl +=
-        '&post_logout_redirect_uri=' + this.environment.SIGN_OUT_REDIRECT_URL;
-      this.logoutUrl += '&state=' + state;
+    if (state && idToken) {
+      this.logoutUrl = `${this.environment.SIGN_OUT_URL}?id_token_hint=${idToken}`;
+      this.logoutUrl += `&post_logout_redirect_uri=${this.environment.SIGN_OUT_REDIRECT_URL}`;
+      this.logoutUrl += `&state=${state}`;
       this.clearStorage();
       this.logoutSubject.next(action);
       window.location.replace(this.logoutUrl);
@@ -180,187 +177,120 @@ export class ImplicitAutenticationService {
   }
 
   public getPayload(): any {
-    var payload: any = {};
-    const idToken = window.localStorage.getItem('id_token')?.split('.');
-    if (idToken != undefined) {
-      payload = JSON.parse(atob(idToken[1]));
-    }
-    return payload;
+    const idToken = localStorage.getItem('id_token')?.split('.');
+    return idToken?.length === 3 ? JSON.parse(atob(idToken[1])) : {};
   }
 
-  public logoutValid() {
-    var state;
-    var valid = true;
-    var queryString = location.search.substring(1);
-    var regex = /([^&=]+)=([^&]*)/g;
-    var m;
-    while (!!(m = regex.exec(queryString))) {
+  public logoutValid(): boolean {
+    const queryString = location.search.substring(1);
+    const regex = /([^&=]+)=([^&]*)/g;
+    let m, state;
+    while ((m = regex.exec(queryString))) {
       state = decodeURIComponent(m[2]);
     }
-    if (window.localStorage.getItem('state') === state) {
+    if (localStorage.getItem('state') === state) {
       this.clearStorage();
-      valid = true;
-    } else {
-      valid = false;
-    }
-    return valid;
-  }
-
-  // el flag es un booleano que define si habrá boton de login
-  public login(flag: any): boolean {
-    console.log("flag login: ",flag)
-    if (
-      window.localStorage.getItem('id_token') === 'undefined' ||
-      window.localStorage.getItem('id_token') === null ||
-      this.logoutValid()
-    ) {
-      if (!flag) {
-        this.getAuthorizationUrl();
-      }
-      return false;
-    } else {
       return true;
     }
+    return false;
   }
 
-  public clearUrl() {
+  public clearUrl(): void {
     const clean_uri = window.location.origin + window.location.pathname;
     window.history.replaceState({}, document.title, clean_uri);
   }
 
-  public getAuthorizationUrl() {
+  public getAuthorizationUrl(): string {
     this.params = this.environment;
     if (!this.params.hasOwnProperty('nonce')) {
       const nonceData = this.generateState();
-      this.params = { ...this.params, ...{ nonce: nonceData } };
+      this.params = { ...this.params, nonce: nonceData };
     }
     if (!this.params.state) {
       this.params.state = this.generateState();
     }
-    let url =
-      this.params.AUTORIZATION_URL +
-      '?' +
-      'client_id=' +
-      encodeURIComponent(this.params.CLIENTE_ID) +
-      '&' +
-      'redirect_uri=' +
-      encodeURIComponent(this.params.REDIRECT_URL) +
-      '&' + // + window.location.href + '&' para redirect con regex
-      'response_type=' +
-      encodeURIComponent(this.params.RESPONSE_TYPE) +
-      '&' +
-      'scope=' +
-      encodeURIComponent(this.params.SCOPE) +
-      '&' +
-      'state_url=' +
-      encodeURIComponent(window.location.hash);
-    if (this.params.hasOwnProperty('nonce')) {
-      url += '&nonce=' + encodeURIComponent(this.params.nonce);
-    }
-    url += '&state=' + encodeURIComponent(this.params.state);
+
+    let url = `${this.params.AUTORIZATION_URL}?client_id=${encodeURIComponent(this.params.CLIENTE_ID)}`;
+    url += `&redirect_uri=${encodeURIComponent(this.params.REDIRECT_URL)}`;
+    url += `&response_type=${encodeURIComponent(this.params.RESPONSE_TYPE)}`;
+    url += `&scope=${encodeURIComponent(this.params.SCOPE)}`;
+    url += `&state_url=${encodeURIComponent(window.location.hash)}`;
+    url += `&nonce=${encodeURIComponent(this.params.nonce)}`;
+    url += `&state=${encodeURIComponent(this.params.state)}`;
+
     window.location.replace(url);
     return url;
   }
 
-  public generateState(): any {
-    const text = ((Date.now() + Math.random()) * Math.random())
-      .toString()
-      .replace('.', '');
+  public generateState(): string {
+    const text = ((Date.now() + Math.random()) * Math.random()).toString().replace('.', '');
     return Md5.hashStr(text);
   }
 
-  public setExpiresAt(): any {
+  public setExpiresAt(): Date | false {
     const expiresAt = localStorage.getItem('expires_at');
     if (!expiresAt || expiresAt === 'Invalid Date') {
       const expiresAtDate = new Date();
-      var expires_in = window.localStorage.getItem('expires_in');
-      expiresAtDate.setSeconds(
-        expiresAtDate.getSeconds() +
-          parseInt(expires_in != null ? expires_in : '0', 10)
-      );
-      window.localStorage.setItem(
-        'expires_at',
-        new Date(expiresAtDate).toUTCString()
-      );
-      return new Date(expiresAtDate);
-    } else {
-      return expiresAt === 'Invalid Date' ? false : new Date(expiresAt);
+      const expires_in = localStorage.getItem('expires_in');
+      expiresAtDate.setSeconds(expiresAtDate.getSeconds() + parseInt(expires_in ?? '0', 10));
+      localStorage.setItem('expires_at', expiresAtDate.toUTCString());
+      return expiresAtDate;
     }
+    return new Date(expiresAt);
   }
 
-  autologout(expires: any): void {
-    if (expires) {
-      const expiresIn = new Date(expires).getTime() - new Date().getTime();
-      if (expiresIn < this.timeLogoutBefore) {
-        this.clearStorage();
-        this.logoutSubject.next('logout-auto-only-localstorage');
-        //location.reload();
-      } else {
-        const timerDelay =
-          expiresIn > this.timeLogoutBefore
-            ? expiresIn - this.timeLogoutBefore
-            : this.timeLogoutBefore;
-        if (!isNaN(expiresIn)) {
-          console.log(
-            `%cFecha expiración: %c${new Date(expires)}`,
-            'color: blue',
-            'color: green'
-          );
-          of(null)
-            .pipe(delay(timerDelay - this.timeLogoutBefore))
-            .subscribe((data) => {
-              this.logout('logout-auto');
-            });
-          if (this.timeAlert < timerDelay) {
-            of(null)
-              .pipe(delay(timerDelay - this.timeAlert))
-              .subscribe((data) => {
-                Swal.fire({
-                  position: 'top-end',
-                  icon: 'info',
-                  title: `Su sesión se cerrará en ${
-                    this.timeAlert / 60000
-                  } minutos`,
-                  showConfirmButton: false,
-                  timer: this.timeActiveAlert,
-                });
-              });
-          }
-        }
+  public autologout(expires: Date | false): void {
+    if (!expires) return;
+
+    const expiresIn = expires.getTime() - Date.now();
+    if (expiresIn < this.timeLogoutBefore) {
+      this.clearStorage();
+      this.logoutSubject.next('logout-auto-only-localstorage');
+      return;
+    }
+
+    const timerDelay = Math.max(expiresIn - this.timeLogoutBefore, this.timeLogoutBefore);
+
+    if (!isNaN(expiresIn)) {
+      of(null).pipe(delay(timerDelay - this.timeLogoutBefore)).subscribe(() => this.logout('logout-auto'));
+
+      if (this.timeAlert < timerDelay) {
+        of(null).pipe(delay(timerDelay - this.timeAlert)).subscribe(() => {
+          Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: `Su sesión se cerrará en ${this.timeAlert / 60000} minutos`,
+            showConfirmButton: false,
+            timer: this.timeActiveAlert,
+          });
+        });
       }
     }
   }
 
   public getDocument(): Promise<string | null> {
-    return new Promise<string | null>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let subscription: Subscription | null = null;
-      subscription = this.user$.subscribe(
-        (data: any) => {
-          if (data && data.userService && data.userService.documento) {
-            resolve(data.userService.documento);
-          } else {
-            resolve(null);
-          }
-          if (subscription) {
-            subscription.unsubscribe();
-          }
+
+      subscription = this.user$.subscribe({
+        next: (data: any) => {
+          resolve(data?.userService?.documento ?? null);
+          subscription?.unsubscribe();
         },
-        (error) => {
+        error: (error) => {
           reject(error);
-          if (subscription) {
-            subscription.unsubscribe();
-          }
+          subscription?.unsubscribe();
         }
-      );
+      });
     });
   }
 
-  public expired() {
-    var expires_at = window.localStorage.getItem('expires_at');
-    return new Date(expires_at != null ? expires_at : new Date()) < new Date();
+  public expired(): boolean {
+    const expires_at = localStorage.getItem('expires_at');
+    return new Date(expires_at ?? new Date().toString()) < new Date();
   }
 
-  public clearStorage() {
-    window.localStorage.clear();
+  public clearStorage(): void {
+    localStorage.clear();
   }
 }
