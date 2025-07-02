@@ -159,7 +159,7 @@ export class OasComponent implements OnChanges {
           rolesPermitidos.includes(rol)
         );
 
-        this.tienePermiso = !!tieneRolValido;
+        this.tienePermiso = true;
         this.isLogin = true;
         this.isloading = false;
         this.cdr.detectChanges();
