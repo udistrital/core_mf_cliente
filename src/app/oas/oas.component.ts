@@ -57,7 +57,6 @@ export class OasComponent implements OnChanges {
   opened = false;
   isLogin = false;
   isloading = false;
-  tienePermiso = false;
   userInfo = null;
   userInfoService = null;
   username = '';
@@ -151,21 +150,11 @@ export class OasComponent implements OnChanges {
           this.menuAppService.init(catalogoEntorno, data);
         }
 
-        const rolesPermitidos = [
-          'ESTUDIANTE', 'DOCENTE', 'DECANO', 'COORDINADOR', 'ADMIN_DOCENCIA', 'ADMIN_SGA'
-        ];
-
-        const tieneRolValido = data.userService.role?.some((rol: any) =>
-          rolesPermitidos.includes(rol)
-        );
-
-        this.tienePermiso = true;
         this.isLogin = true;
         this.isloading = false;
         this.cdr.detectChanges();
       } else {
         this.isLogin = false;
-        this.tienePermiso = false;
         this.isloading = false;
       }
     });

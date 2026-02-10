@@ -55,9 +55,7 @@ export class SidebarComponent implements OnInit {
       )
       .subscribe((data: any) => {
         if (JSON.stringify(data) !== '{}') {
-          if (!this.navItems) {
-            this.navItems = data;
-          }
+          this.navItems = data;
         }
       });
     this.menuService.sidebar$.subscribe(
@@ -69,13 +67,10 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnChanges(changes: any): void {
-    if (changes.appMenu !== undefined) {
-      if (changes.appMenu.currentValue !== undefined) {
-        if (!changes.appMenu.nextValue) {
-          if (!this.navItems) {
-            this.menuService.getMenu(this.appMenu);
-          }
-        }
+    if (changes.appMenu) {
+      const newAppMenu = changes.appMenu.currentValue;
+      if (newAppMenu) {
+        this.menuService.getMenu(newAppMenu);
       }
     }
   }

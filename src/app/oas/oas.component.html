@@ -1,17 +1,6 @@
 <!-- No ha iniciado sesión -->
 @if (!isLogin) {
 <ng-uui-login [appname]="appname" [isloading]="isloading" (loginEvent)="loginEvent()"></ng-uui-login>
-} @else if (!tienePermiso) {
-<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-    <div style="text-align: center; background: white; border: 1px solid #ccc; padding: 2rem; border-radius: 8px;">
-        <h2>Acceso denegado</h2>
-        <p>Estimado usuario, no hace parte de la prueba piloto.</p>
-        <div style="font-size: 2.5rem;">⚠️</div>
-        <button (click)="logoutEvent()" style="margin-top: 1rem; padding: 0.5rem 1rem;">
-            Cerrar sesión
-        </button>
-    </div>
-</div>
 } @else {
 <ng-uui-header [appname]="appname" [username]="username" [notificaciones]="notificaciones" [menuApps]="menuApps"
     (logoutEvent)="logoutEvent()"></ng-uui-header>

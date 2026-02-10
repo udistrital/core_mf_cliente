@@ -44,7 +44,9 @@ export class MenuService {
   getMenu(appMenu: string) {
     const menuInfo = localStorage.getItem('menu');
     if (menuInfo) {
-      this.menuSubject.next(JSON.parse(atob(menuInfo)));
+      const menu = JSON.parse(atob(menuInfo));
+      this.restoreExpandedState(menu);
+      this.menuSubject.next(menu);
     } else {
       this.userService.user$.subscribe((userResponse: any) => {
         const { user, userService } = userResponse;
@@ -133,12 +135,110 @@ export class MenuService {
     }
   }  
   
-  private collapseMenusRecursive(items: any[]) {
-    //console.log(items);
+  public collapseAllMenusExcept(exceptId: string) {
+    const menuInfo = localStorage.getItem('menu');
+    if (menuInfo) {
+      const menu = JSON.parse(atob(menuInfo));
+      
+      this.collapseAllRecursive(menu);
+      
+      this.expandItemAndParents(menu, exceptId);
+      
+      localStorage.setItem('menu', btoa(JSON.stringify(menu)));
+      this.menuSubject.next(menu); 
+    }
+  }
+  
+  private collapseAllRecursive(items: any[]) {
     items.forEach(item => {
-      //onsole.log(item);
+      item.expanded = false;
+      if (item.Opciones && item.Opciones.length > 0) {
+        this.collapseAllRecursive(item.Opciones);
+      }
+    });
+  }
+  
+  private expandItemAndParents(items: any[], itemId: string): boolean {
+    for (const item of items) {
+      if (String(item.Id) === String(itemId)) {
+        item.expanded = true;
+        return true;
+      }
+      
+      if (item.Opciones && item.Opciones.length > 0) {
+        if (this.expandItemAndParents(item.Opciones, itemId)) {
+
+          item.expanded = true;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
+  private collapseMenusRecursive(items: any[]) {
+    items.forEach(item => {
       item.expanded = false; 
     });
+  }
+
+  private collapseMenusRecursiveExcept(items: any[], exceptId: string) {
+    items.forEach(item => {
+      if (item.Id !== exceptId) {
+        item.expanded = false;
+      }
+      
+      if (item.Opciones && item.Opciones.length > 0) {
+        this.collapseMenusRecursiveExcept(item.Opciones, exceptId);
+      }
+    });
+  }
+
+  private restoreExpandedState(items: any[]) {
+    const selectedMenuId = this.getSelectedMenuId();
+    if (!selectedMenuId) return;
+
+    const restored = this.restoreExpandedStateRecursive(items, selectedMenuId);
+  }
+
+  private restoreExpandedStateRecursive(items: any[], selectedId: string): boolean {
+    for (const item of items) {
+      
+      if (item.Opciones && item.Opciones.length > 0) {
+        for (const child of item.Opciones) {
+
+          if (String(child.Id) === String(selectedId)) {
+            item.expanded = true;
+            return true;
+          }
+        }
+        
+        const childIsSelected = this.restoreExpandedStateRecursive(item.Opciones, selectedId);
+        if (childIsSelected) {
+          item.expanded = true;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private getSelectedMenuId(): string | null {
+    const selectedMenuEncoded = localStorage.getItem('select');
+    if (!selectedMenuEncoded) {
+      return null;
+    }
+    try {
+      const decoded = atob(selectedMenuEncoded);
+      return decoded;
+    } catch (e) {
+      try {
+        const parsed = JSON.parse(selectedMenuEncoded);
+        return parsed;
+      } catch {
+        return selectedMenuEncoded;
+      }
+    }
   }
   
   
