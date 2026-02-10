@@ -16,7 +16,8 @@ import { lang } from './services/globals';
 
 
 export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, lang.lang + 'assets/i18n/', '.json');
+  const basePath = lang.lang || '/';
+  return new TranslateHttpLoader(http, basePath + 'assets/i18n/', '.json');
 }
 
 export const appConfig: ApplicationConfig = {

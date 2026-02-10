@@ -106,6 +106,7 @@ export class MenuComponent implements OnInit {
     if (!item.Opciones || item.Opciones.length === 0) {
       if (!item.Id || item.Nombre === 'Inicio') {
         localStorage.removeItem('select');
+        this.navService.collapseAllMenus();
       } else {
         this.setSelectedMenuId(item.Id);
       }
