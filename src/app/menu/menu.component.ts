@@ -4,7 +4,6 @@ import {
   Input,
   NO_ERRORS_SCHEMA,
   OnInit,
-  ChangeDetectorRef,
 } from '@angular/core';
 import { NavItem } from './../interfaces/nav-item';
 import { MenuService } from '../services/menu.service';
@@ -49,8 +48,7 @@ export class MenuComponent implements OnInit {
 
   constructor(
     public navService: MenuService,
-    private translateService: TranslateService,
-    private cdr: ChangeDetectorRef
+    private translateService: TranslateService
   ) {
     if (this.depth === undefined) {
       this.depth = 0;
@@ -58,43 +56,8 @@ export class MenuComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.restoreMenuState();
-  }
-
-  private restoreMenuState(): void {
-    const selectedMenuId = this.getSelectedMenuId();
-    if (!selectedMenuId || !this.item) return;
-
-    if (String(this.item.Id) === String(selectedMenuId)) {
-
-      if (this.item.Opciones && this.item.Opciones.length > 0) {
-        localStorage.removeItem('select');
-        return;
-      }
-
-      this.select = true;
-      this.item.expanded = true;
-      this.cdr.detectChanges();
-      return;
-    }
-
     if (this.item.expanded) {
       this.select = true;
-      this.cdr.detectChanges();
-    }
-  }
-
-  private getSelectedMenuId(): string | null {
-    const selectedMenuEncoded = localStorage.getItem('select');
-    if (!selectedMenuEncoded) return null;
-    try {
-      return atob(selectedMenuEncoded);
-    } catch (e) {
-      try {
-        return JSON.parse(selectedMenuEncoded);
-      } catch {
-        return selectedMenuEncoded;
-      }
     }
   }
 
