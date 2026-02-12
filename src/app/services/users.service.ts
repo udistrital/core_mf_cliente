@@ -56,7 +56,6 @@ export class UserService {
         .subscribe((res: any) => {
           if (res && res.length && Object.keys(res[0]).length > 0) {
             this.user = this.extractTercero(res, usuario, correo) || res[0].TerceroId;
-            localStorage.setItem('nombre_consejo', this.user?.NombreCompleto || ''); // sistema evaluación docente
             if (this.user) {
               this.user.Documento = docIdentificacion;
               this.updateUser(this.user);
