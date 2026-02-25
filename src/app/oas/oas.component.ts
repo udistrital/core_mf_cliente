@@ -5,7 +5,7 @@ import {
   Input,
   OnChanges,
   Output,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { ConfiguracionService } from '../services/configuracion.service';
 import { ImplicitAutenticationService } from '../services/implicit_autentication.service';
@@ -52,19 +52,21 @@ export class OasComponent implements OnChanges {
   @Output('logout') logout: EventEmitter<any> = new EventEmitter();
   // tslint:disable-next-line: no-input-rename
   @Input('environment') environment: any;
-  opened: boolean = false;
+  private entornoListo = false;
+  CONFIGURACION_SERVICE: any;
+  opened = false;
   isLogin = false;
+  isloading = false;
   userInfo = null;
   userInfoService = null;
-  appname: string = '';
-  appMenu: string = '';
-  username: string = '';
-  isloading: boolean = false;
-  notificaciones: boolean = false;
-  menuApps: boolean = false;
-  CONFIGURACION_SERVICE: any;
+  username = '';
   entorno: any;
   navItems: any;
+  appname = '';
+  appMenu = '';
+  notificaciones = false;
+  menuApps = false;
+
   constructor(
     private confService: ConfiguracionService,
     private notificacionesService: NotificacionesService,
@@ -82,88 +84,93 @@ export class OasComponent implements OnChanges {
         this.logout.emit(logoutEvent);
       }
     });
+  }
+
+  ngOnChanges(changes: any): void {
+    const nuevoEnv = changes.environment?.currentValue;
+    if (nuevoEnv) {
+      this.procesarEnvironment(nuevoEnv);
+    }
+  }
+
+  private async procesarEnvironment(env: any): Promise<void> {
+    const {
+      CONFIGURACION_SERVICE,
+      entorno,
+      notificaciones,
+      menuApps,
+      appMenu,
+      navItems,
+      appname,
+      autenticacion,
+      TOKEN
+    } = env;
+
+    // Seteo de variables de entorno
+    this.appMenu = appMenu;
+    this.navItems = navItems;
+    this.appname = appname;
+    this.entorno = entorno;
+    this.notificaciones = notificaciones;
+    this.menuApps = menuApps;
+    this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
+    lang.lang = TOKEN.REDIRECT_URL;
+    this.entornoListo = true;
+    this.isloading = true;
+
+    try {
+      if (autenticacion) {
+        await this.autenticacionService.init(TOKEN);
+        this.autenticacionService.login(true);
+        this.suscribirUsuario();
+      }
+    } catch (error) {
+      console.error('Fallo autenticación:', error);
+    } finally {
+      this.isloading = false;
+    }
+  }
+
+  private suscribirUsuario(): void {
     this.autenticacionService.user$.subscribe((data: any) => {
-      if (JSON.stringify(data) !== '{}') {
-        setTimeout(() => {
-          if (
-            data.user &&
-            data.userService &&
-            !this.userInfo &&
-            !this.userInfoService
-          ) {
-            this.userInfo = data.user;
-            this.userInfoService = data.userInfoService;
-            this.user.emit(data);
-            if (this.notificaciones) {
-              this.notificacionesService.init(data);
-            }
-            if (this.menuApps) {
-              this.menuAppService.init(
-                catalogo[this.entorno as keyof typeof catalogo],
-                data
-              );
-            }
-            this.username = data.user
-              ? data.user.email
-                ? data.user.email
-                : ''
-              : '';
-            this.isLogin = true;
-            this.isloading = true;
-          } else {
-            this.isLogin = false;
-            setTimeout(() => { this.isloading ? this.isloading = false : this.isloading = true }, 2500)
-          }
-        }, 100);
+      if (!this.entornoListo) return;
+
+      if (data?.user && data?.userService) {
+        this.userInfo = data.user;
+        this.userInfoService = data.userService;
+        this.username = data.user?.email ?? '';
+        this.user.emit(data);
+
+        if (this.notificaciones) {
+          this.notificacionesService.init(data);
+        }
+
+        if (this.menuApps && this.entorno) {
+          const catalogoEntorno = catalogo[this.entorno as keyof typeof catalogo];
+          this.menuAppService.init(catalogoEntorno, data);
+        }
+
+        this.isLogin = true;
+        this.isloading = false;
+        this.cdr.detectChanges();
       } else {
         this.isLogin = false;
-        this.isloading = true;
-        setTimeout(() => {
-          this.isloading ? (this.isloading = false) : (this.isloading = true);
-        }, 2500);
+        this.isloading = false;
       }
     });
   }
 
-  ngOnChanges(changes: any): void {
-    if (changes.environment !== undefined) {
-      if (changes.environment.currentValue !== undefined) {
-        const {
-          CONFIGURACION_SERVICE,
-          entorno,
-          notificaciones,
-          menuApps,
-          appMenu,
-          navItems,
-          appname,
-          autenticacion,
-          TOKEN,
-        } = changes.environment.currentValue;
-        this.appMenu = appMenu;
-        this.navItems = navItems;
-        this.appname = appname;
-        lang.lang = TOKEN.REDIRECT_URL;
-        //console.log('Traducción', lang.lang);
-        this.notificaciones = notificaciones;
-        this.menuApps = menuApps;
-        this.entorno = entorno;
-        this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
-        if (autenticacion) {
-          this.autenticacionService.init(TOKEN);
-          this.autenticacionService.login(true);
-        }
-      }
-    }
-  }
-
-  loginEvent() {
+  loginEvent(): void {
     this.autenticacionService.getAuthorizationUrl();
   }
 
-  logoutEvent() {
+  logoutEvent(): void {
     this.autenticacionService.logout('action-event');
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    // if (this.environment) {
+    //   this.procesarEnvironment(this.environment);
+    // }
   }
 }
