@@ -12,12 +12,15 @@ import { environment } from '../environments/environment';
 import { OasComponent } from './oas/oas.component';
 import { ConfiguracionService } from './services/configuracion.service';
 import { lang } from './services/globals';
+import { MatDialog, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
+import { Overlay } from '@angular/cdk/overlay';
 
 
 
 export function createTranslateLoader(http: HttpClient) {
-  const basePath = lang.lang || '/';
-  return new TranslateHttpLoader(http, basePath + 'assets/i18n/', '.json');
+  // Apunta a /assets/i18n/ (raíz del servidor)
+  // Esto permite que se compartan las traducciones del root (sga_cliente_root)
+  return new TranslateHttpLoader(http, '/assets/i18n/', '.json');
 }
 
 export const appConfig: ApplicationConfig = {
@@ -28,6 +31,17 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     getSingleSpaExtraProviders(),
     provideHttpClient(withFetch()),
+    // Configuración de MatDialog
+    MatDialog,
+    Overlay,
+    {
+      provide: MAT_DIALOG_DEFAULT_OPTIONS,
+      useValue: {
+        hasBackdrop: true,
+        disableClose: false,
+        width: '800px'
+      }
+    },
     TranslateModule.forRoot({
       defaultLanguage: 'es',
       loader: {
