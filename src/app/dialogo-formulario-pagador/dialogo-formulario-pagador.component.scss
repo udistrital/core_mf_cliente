@@ -1,0 +1,134 @@
+/* Contenedor general del formulario */
+.dinamic-form {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 25px 30px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  small.text-muted {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+}
+
+/* Fieldset general */
+.fieldseter {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px 25px;
+  background-color: white;
+
+  legend {
+    padding: 0 10px;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+}
+
+/* Grids para organizar campos */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.grid-direccion {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  align-items: end;
+
+  .separador {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+}
+
+/* Full width para bloques de dirección completa */
+.full-width {
+  width: 100%;
+}
+
+/* Mat form fields */
+mat-form-field {
+  width: 100%;
+
+  mat-label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  input, mat-select {
+    color: #000;
+  }
+
+  mat-error {
+    font-size: 0.8rem;
+    color: #d32f2f;
+  }
+
+  mat-hint {
+    font-size: 0.75rem;
+    color: #6c757d;
+  }
+}
+
+/* Checkbox */
+.checkbox {
+  margin: 10px 0;
+  mat-checkbox {
+    font-weight: 500;
+  }
+}
+
+/* Botones finales */
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  button {
+    min-width: 120px;
+  }
+}
+
+/* Tarjetas de dirección */
+.border {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.bg-light {
+  background-color: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .grid-direccion {
+    grid-template-columns: 1fr !important;
+  }
+}

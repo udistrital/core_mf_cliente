@@ -1,3 +1,39 @@
 {
-  
+  "admision": {
+    "formulario_pagador": "Payer form"
+  },
+  "GLOBAL": {
+    "campos_obligatorios": "Fields marked with * are mandatory",
+    "falta_campo": "This field is required",
+    "naturaleza": "Nature",
+    "tipo_documento": "Document type",
+    "numero_documento": "Document number",
+    "primer_apellido": "First last name",
+    "segundo_apellido": "Second last name",
+    "primer_nombre": "First name",
+    "segundo_nombre": "Second name",
+    "digito_verificacion": "Check digit",
+    "numero_fuera_rango": "The number is out of allowed range",
+    "digito_verificacion_incorrecto": "The check digit is incorrect",
+    "razon_social": "Business name",
+    "tamano_superado_razon": "The business name exceeds the maximum of 100 characters",
+    "editar_direccion": "Edit address",
+    "tipo_via": "Type of road",
+    "numero": "Number",
+    "numero_secundario": "Secondary number",
+    "complemento": "Complement",
+    "interior_1": "Interior 1",
+    "interior_2": "Interior 2",
+    "direccion_completa": "Full address",
+    "direccion": "Address",
+    "telefono": "Phone",
+    "correo": "Email",
+    "confirmo_informacion": "I confirm that the information provided is correct",
+    "cancelar": "Cancel",
+    "continuar": "Continue",
+    "guardar": "Save"
+  },
+  "ERROR": {
+    "sin_puntos_comas": "Periods and commas are not allowed in this field"
+  }
 }

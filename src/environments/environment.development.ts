@@ -19,4 +19,7 @@ export const environment = {
   },
   TERCEROS_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/terceros_crud/v1/',
   apiUrl: 'https://pruebascoreclientes.portaloas.udistrital.edu.co/',
+  AGORA_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/agora_crud/v1/',
+  INSCRIPCION_MID_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/inscripcion_mid/v1/',
+  FACTURACION_ELECTONICA_MID: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/facturacion_electronica_mid/v1/'
 };

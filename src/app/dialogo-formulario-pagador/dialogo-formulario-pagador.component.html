@@ -1,0 +1,241 @@
+<form novalidate [formGroup]="revisionForm" class="dinamic-form">
+
+  <small class="text-muted">{{ 'GLOBAL.campos_obligatorios' | translate }}</small>
+
+  <!-- FORMULARIO PAGADOR -->
+  <fieldset class="fieldseter">
+    <legend>{{ 'admision.formulario_pagador' | translate }}</legend>
+
+    <!-- Sección de identificación -->
+    <div class="grid-3">
+      <mat-form-field appearance="fill">
+        <mat-label>{{ 'GLOBAL.naturaleza' | translate }} *</mat-label>
+        <mat-select formControlName="naturaleza" (selectionChange)="onNaturalezaChange($event)">
+          <mat-option *ngFor="let n of naturalezas" [value]="n.value">
+            {{ n.nombre | translate }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="revisionForm.get('naturaleza')?.hasError('required')">
+          {{ 'GLOBAL.falta_campo' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>{{ 'GLOBAL.tipo_documento' | translate }} *</mat-label>
+        <mat-select formControlName="tipoDocumento">
+          <mat-option value="C">Cédula de ciudadanía</mat-option>
+          <mat-option value="E">Cédula de extranjería</mat-option>
+          <mat-option value="P">Pasaporte</mat-option>
+          <mat-option value="T">Cédula de extranjería</mat-option>
+          <mat-option value="N">NIT</mat-option>
+          <mat-option value="X">NIT extranjería</mat-option>
+        </mat-select>
+        <mat-error *ngIf="revisionForm.get('tipoDocumento')?.hasError('required')">
+          {{ 'GLOBAL.falta_campo' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>{{ 'GLOBAL.numero_documento' | translate }} *</mat-label>
+        <input matInput type="text" formControlName="numeroDocumento">
+        <mat-error *ngIf="revisionForm.get('numeroDocumento')?.hasError('required')">
+          {{ 'GLOBAL.falta_campo' | translate }}
+        </mat-error>
+        <mat-error *ngIf="revisionForm.get('numeroDocumento')?.hasError('pattern')">
+          {{ 'ERROR.sin_puntos_comas' | translate }}
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Persona Natural -->
+    <ng-container *ngIf="!esJuridica">
+      <div class="grid-2">
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.primer_apellido' | translate }} *</mat-label>
+          <input matInput formControlName="primerApellido">
+          <mat-error *ngIf="revisionForm.get('primerApellido')?.hasError('required')">
+            {{ 'GLOBAL.falta_campo' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.segundo_apellido' | translate }}</mat-label>
+          <input matInput formControlName="segundoApellido">
+        </mat-form-field>
+      </div>
+
+      <div class="grid-2">
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.primer_nombre' | translate }} *</mat-label>
+          <input matInput formControlName="primerNombre">
+          <mat-error *ngIf="revisionForm.get('primerNombre')?.hasError('required')">
+            {{ 'GLOBAL.falta_campo' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.segundo_nombre' | translate }}</mat-label>
+          <input matInput formControlName="segundoNombre">
+        </mat-form-field>
+      </div>
+    </ng-container>
+
+    <!-- Persona Jurídica -->
+    <ng-container *ngIf="esJuridica">
+      <div class="grid-3">
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.digito_verificacion' | translate }} *</mat-label>
+          <input matInput formControlName="digito_verificacion">
+          <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('required')">
+            {{ 'GLOBAL.falta_campo' | translate }}
+          </mat-error>
+          <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('pattern')">
+            {{ 'GLOBAL.numero_fuera_rango' | translate }}
+          </mat-error>
+          <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('digitoIncorrecto')">
+            {{ 'GLOBAL.digito_verificacion_incorrecto' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="col-span-2">
+          <mat-label>{{ 'GLOBAL.razon_social' | translate }} *</mat-label>
+          <input matInput formControlName="razonSocial">
+          <mat-hint align="end">{{revisionForm.get('razonSocial').value?.length || 0}}/100</mat-hint>
+          <mat-error *ngIf="revisionForm.get('razonSocial')?.hasError('required')">
+            {{ 'GLOBAL.falta_campo' | translate }}
+          </mat-error>
+          <mat-error *ngIf="revisionForm.get('razonSocial')?.hasError('maxlength')">
+            {{ 'GLOBAL.tamano_superado_razon' | translate }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </ng-container>
+
+    <!-- Vista previa de dirección -->
+    <div *ngIf="!editandoDireccion && direccionPreview" class="p-3 border rounded bg-light mb-3">
+      <strong>{{ direccionPreview }}</strong>
+      <button mat-icon-button color="primary" (click)="iniciarEdicionDireccion()" matTooltip="{{ 'GLOBAL.editar_direccion' | translate }}">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
+
+    <!-- Campos de edición de dirección -->
+    <div *ngIf="mostrarCamposDireccion && editandoDireccion">
+      <div class="grid-direccion">
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.tipo_via' | translate }} *</mat-label>
+          <mat-select formControlName="tipoVia">
+            <mat-option *ngFor="let via of vias" [value]="via.Abreviatura">
+              {{ via.Nomenclatura | translate }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.numero' | translate }} *</mat-label>
+          <input matInput formControlName="numeroVia">
+          <mat-error *ngIf="revisionForm.get('numeroVia')?.hasError('required')">
+            {{ 'GLOBAL.falta_campo' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <span class="separador">#</span>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.numero_secundario' | translate }} *</mat-label>
+          <input matInput formControlName="numeroSecundario">
+          <mat-error *ngIf="revisionForm.get('numeroSecundario')?.hasError('required')">
+            {{ 'GLOBAL.falta_campo' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <span class="separador">-</span>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.complemento' | translate }} *</mat-label>
+          <input matInput formControlName="complementoDireccion">
+        </mat-form-field>
+      </div>
+
+      <!-- Interior 1 y 2 -->
+      <div class="grid-4">
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.interior_1' | translate }}</mat-label>
+          <mat-select formControlName="tipoInterior1">
+            <mat-option *ngFor="let int of interior" [value]="int.Abreviatura">
+              {{ int.Nomenclatura | translate }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.numero' | translate }}</mat-label>
+          <input matInput formControlName="numeroInterior1">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.interior_2' | translate }}</mat-label>
+          <mat-select formControlName="tipoInterior2">
+            <mat-option *ngFor="let int of interior" [value]="int.Abreviatura">
+              {{ int.Nomenclatura | translate }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>{{ 'GLOBAL.numero' | translate }}</mat-label>
+          <input matInput formControlName="numeroInterior2">
+        </mat-form-field>
+      </div>
+
+      <div class="full-width border p-2 rounded bg-light mt-2">
+        <strong>{{ 'GLOBAL.direccion_completa' | translate }}:</strong> {{ direccionPreview || 'Pendiente de completar' }}
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <mat-form-field appearance="fill">
+        <mat-label>{{ 'GLOBAL.telefono' | translate }} *</mat-label>
+        <input matInput type="tel" formControlName="telefono">
+        <mat-error *ngIf="revisionForm.get('telefono')?.hasError('required')">
+          {{ 'GLOBAL.falta_campo' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>{{ 'GLOBAL.correo' | translate }} *</mat-label>
+        <input matInput type="email" formControlName="correo">
+        <mat-error *ngIf="revisionForm.get('correo')?.hasError('required')">
+          {{ 'GLOBAL.falta_campo' | translate }}
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+  </fieldset>
+
+  <!-- Confirmación -->
+  <div class="checkbox">
+    <mat-checkbox formControlName="aprobado">
+      {{ 'GLOBAL.confirmo_informacion' | translate }}
+    </mat-checkbox>
+  </div>
+
+  <!-- Botones -->
+  <div class="acciones">
+          <button mat-raised-button color="primary"
+                  (click)="continuar()" 
+                  [disabled]="loading || formularioModificado || deshabilitarBotonContinuar"
+                  class="px-4 py-2 mr-2">
+            {{ 'GLOBAL.continuar' | translate }}
+          </button>
+          <button mat-raised-button color="primary" 
+                  (click)="guardarRevision()" 
+                  [disabled]="loading || revisionForm.invalid || !formularioModificado" 
+                  class="px-4 py-2">
+            <mat-icon *ngIf="revisionForm.valid">check_circle</mat-icon>
+            <mat-icon *ngIf="revisionForm.invalid && revisionForm.touched" color="warn">error</mat-icon>
+            {{ 'GLOBAL.guardar' | translate }}
+          </button>
+  </div>
+
+</form>
