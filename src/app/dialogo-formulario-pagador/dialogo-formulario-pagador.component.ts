@@ -86,8 +86,6 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
   }
 
   ngOnInit() {
-    console.log("Datos recibidos");
-    console.log(this.data);
 
     // Configurar observadores para campos de dirección
     const camposDireccion = [
@@ -209,7 +207,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
                 Nomenclatura: element.Nomenclatura
               }));
           },
-          (error: HttpErrorResponse) => this.manejarError(error, 'admision.nomenclatura_dian')
+          (error: HttpErrorResponse) => this.manejarError(error, 'formulario_pagador.pagador.nomenclatura_dian')
         )
     );
   }
@@ -287,7 +285,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
    */
   guardarRevision() {
     if (this.revisionForm.valid) {
-      this.popUpManager.showConfirmAlert(this.translate.instant('admision.seguro_pagador')).then(
+      this.popUpManager.showConfirmAlert(this.translate.instant('formulario_pagador.pagador.seguro_pagador')).then(
         ok => {
           if (ok.value) {
             this.guardarDatosPagador().then(() => {
@@ -303,7 +301,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
                 this.dialogRef.close({ continuar: true });
               }
             }).catch(error => {
-              this.popUpManager.showErrorAlert(this.translate.instant('ERROR.guardar_pagador'));
+              this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.ERROR.guardar_pagador'));
             });
           } else {
             this.revisionForm.patchValue({ aprobado: false });
@@ -311,10 +309,9 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
         }
       );
     } else {
-      this.popUpManager.showErrorAlert(this.translate.instant('GLOBAL.vacio'));
+      this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.GLOBAL.vacio'));
       this.marcarCamposComoTocados(this.revisionForm);
     }
-    console.log("Guarda revisión de datos")
   }
 
   /**
@@ -339,7 +336,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
     return new Promise((resolve, reject) => {
       // Verificar cambios
       if (!this.hayModificaciones() && !this.editandoDireccion) {
-        this.popUpManager.showInfoToast(this.translate.instant('recibo_pago.no_hay_cambios'));
+        this.popUpManager.showInfoToast(this.translate.instant('formulario_pagador.recibo_pago.no_hay_cambios'));
         resolve();
         return;
       }
@@ -347,9 +344,9 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       this.setLoading(true);
       
       // Extraer número de recibo
-      const numeroRecibo = Array.isArray(this.data.info_recibo.ReciboInscripcion) 
-        ? this.data.info_recibo.ReciboInscripcion[0] 
-        : this.data.info_recibo.ReciboInscripcion;
+      const numeroRecibo = Array.isArray(this.data.info_recibo.Comprobante) 
+        ? this.data.info_recibo.Comprobante[0] 
+        : this.data.info_recibo.Comprobante;
       
       // Actualizar dirección previa desde formulario si se está editando
       if (this.editandoDireccion) {
@@ -363,15 +360,15 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
           .then(() => this.crearNuevoRegistro(numeroRecibo))
           .then(() => {
             this.setLoading(false);
-            this.popUpManager.showSuccessAlert(this.translate.instant('recibo_pago.pagador_actualizado'));
+            this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_actualizado'));
             resolve();
           })
           .catch(error => {
             this.setLoading(false);
             this.popUpManager.showErrorAlert(
               error.message === 'Error al inactivar el registro existente' 
-                ? this.translate.instant('ERROR.inactivar_registro')
-                : this.translate.instant('ERROR.actualizar_pagador')
+                ? this.translate.instant('formulario_pagador.ERROR.inactivar_registro')
+                : this.translate.instant('formulario_pagador.ERROR.actualizar_pagador')
             );
             reject(error);
           });
@@ -380,12 +377,12 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
         this.crearNuevoRegistro(numeroRecibo)
           .then(() => {
             this.setLoading(false);
-            this.popUpManager.showSuccessAlert(this.translate.instant('recibo_pago.pagador_guardado'));
+            this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_guardado'));
             resolve();
           })
           .catch(error => {
             this.setLoading(false);
-            this.popUpManager.showErrorAlert(this.translate.instant('ERROR.guardar_pagador'));
+            this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.ERROR.guardar_pagador'));
             reject(error);
           });
       }
@@ -437,8 +434,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
                 this.editandoDireccion = false;
               } else {
                 // Error:  registros
-                this.popUpManager.showErrorAlert(this.translate.instant('admision.error_multiples_registros'));
-                console.log("ERROR:");
+                this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.pagador.error_multiples_registros'));
                 this.formularioModificado = false;
               }
             } else {
@@ -509,8 +505,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       this.actualizarValidadoresPorNaturaleza(this.datosPagador.TERPA_NATURALEZA);
       this.actualizarValidacionDigito();
     } catch (error) {
-      // this.popUpManager.showErrorToast(this.translate.instant('ERROR.cargar_datos'));
-      console.log("Error: ", error)
+      this.popUpManager.showErrorToast(this.translate.instant('formulario_pagador.ERROR.cargar_datos'));
     }
   }
 
@@ -583,7 +578,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       });
     } catch (e) {
       console.error('Error procesando dirección:', e);
-      this.popUpManager.showErrorToast(this.translate.instant('ERROR.procesar_direccion'));
+      this.popUpManager.showErrorToast(this.translate.instant('formulario_pagador.ERROR.procesar_direccion'));
     }
   }
 
@@ -624,7 +619,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
   private inactivarRegistro(registro: any): Promise<void> {
     return new Promise((resolve, reject) => {
       const secuencia = parseInt(registro.TERPA_SECUENCIA, 10);
-      const añoPago = parseInt(this.data.info_recibo.ReciboAnio);
+      const añoPago = parseInt(this.data.anioRecibo.split('/')[1]);
       
       // Crear objeto minimalista solo con la información necesaria
       const datosRequest = {
@@ -637,18 +632,18 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       
       
       // Hacer petición PUT
-    this.facturacionElectronicaService.put(`tercero_pago/${secuencia}`, datosRequest).subscribe(
-      (response: any) => {
+    this.facturacionElectronicaService.put(`tercero_pago/${secuencia}`, datosRequest).subscribe({
+      next: (response: any) => {
         if (response && response.Success) {
           resolve();
         } else {
           reject(new Error('Error al inactivar el registro existente'));
         }
       },
-      (error: HttpErrorResponse) => {
+      error: (error: HttpErrorResponse) => {
         reject(error);
       }
-    );
+    });
   });
   }
   
@@ -658,7 +653,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
   private crearNuevoRegistro(numeroRecibo: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const formValues = this.revisionForm.value;
-      const añoPago = this.data.info_recibo.ReciboAnio;
+      const añoPago = this.data.anioRecibo.split('/')[1];
       
       // Formatear fecha
       const fechaActual = new Date();
@@ -710,18 +705,18 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       };
       
       // Hacer petición POST
-      this.facturacionElectronicaService.post('facturacion_electronica', datosRequest).subscribe(
-        (response: any) => {
+      this.facturacionElectronicaService.post('tercero_pago/', datosRequest).subscribe({
+        next: (response: any) => {
           if (response && response.Success) {
             resolve();
           } else {
             reject(new Error('Error al crear el nuevo registro'));
           }
         },
-        (error: HttpErrorResponse) => {
+        error: (error: HttpErrorResponse) => {
           reject(error);
         }
-      );
+      });
     });
   }
 
@@ -919,10 +914,10 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
     Swal.fire({
       icon: 'error',
       title: error.status + '',
-      text: this.translate.instant('ERROR.' + error.status),
-      footer: this.translate.instant('GLOBAL.cargar') + ' - ' +
+      text: this.translate.instant('formulario_pagador.ERROR.' + error.status),
+      footer: this.translate.instant('formulario_pagador.GLOBAL.cargar') + ' - ' +
         this.translate.instant(contexto),
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
     });
   }
 

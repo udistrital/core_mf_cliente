@@ -1,38 +1,3 @@
 {
-  "admision": {
-    "formulario_pagador": "Formulario de pagador"
-  },
-  "GLOBAL": {
-    "campos_obligatorios": "Campos marcados con * son obligatorios",
-    "falta_campo": "Este campo es obligatorio",
-    "naturaleza": "Naturaleza",
-    "tipo_documento": "Tipo de documento",
-    "numero_documento": "Número de documento",
-    "primer_apellido": "Primer apellido",
-    "segundo_apellido": "Segundo apellido",
-    "primer_nombre": "Primer nombre",
-    "segundo_nombre": "Segundo nombre",
-    "digito_verificacion": "Dígito de verificación",
-    "numero_fuera_rango": "El número está fuera del rango permitido",
-    "digito_verificacion_incorrecto": "El dígito de verificación es incorrecto",
-    "razon_social": "Razón social",
-    "tamano_superado_razon": "La razón social excede el máximo de 100 caracteres",
-    "editar_direccion": "Editar dirección",
-    "tipo_via": "Tipo de vía",
-    "numero": "Número",
-    "numero_secundario": "Número secundario",
-    "complemento": "Complemento",
-    "interior_1": "Interior 1",
-    "interior_2": "Interior 2",
-    "direccion_completa": "Dirección completa",
-    "direccion": "Dirección",
-    "telefono": "Teléfono",
-    "correo": "Correo",
-    "confirmo_informacion": "Confirmo que la información suministrada es correcta",
-    "cancelar": "Cancelar",
-    "continuar": "Continuar"
-  },
-  "ERROR": {
-    "sin_puntos_comas": "No se permiten puntos ni comas en este campo"
-  }
+  
 }
