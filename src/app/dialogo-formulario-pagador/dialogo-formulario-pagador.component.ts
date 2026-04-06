@@ -444,7 +444,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
             }
           },
           (error: HttpErrorResponse) => {
-            this.manejarError(error, 'ERROR.general');
+            this.manejarError(error, 'formulario_pagador.ERROR.general');
             // En caso de error, mostrar campos de dirección para edición
             this.mostrarCamposDireccion = true;
             this.editandoDireccion = true;

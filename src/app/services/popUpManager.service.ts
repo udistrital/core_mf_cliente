@@ -46,36 +46,36 @@ export class PopUpManager {
       icon: 'info',
       title: title,
       text: text,
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
     });
   }
 
   showSuccessAlert(text: string) {
     Swal.fire({
       icon: 'success',
-      title: this.translate.instant('GLOBAL.operacion_exitosa'),
+      title: this.translate.instant('formulario_pagador.GLOBAL.operacion_exitosa'),
       text: text,
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
     });
   }
 
   showErrorAlert(text: string) {
     Swal.fire({
       icon: 'error',
-      title: this.translate.instant('GLOBAL.error'),
+      title: this.translate.instant('formulario_pagador.GLOBAL.error'),
       text: text,
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
     });
   }
 
-  showConfirmAlert(text: string, title: string = this.translate.instant('GLOBAL.atencion')): Promise<any> {
+  showConfirmAlert(text: string, title: string = this.translate.instant('formulario_pagador.GLOBAL.atencion')): Promise<any> {
     return Swal.fire({
       title: title,
       text: text,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
-      cancelButtonText: this.translate.instant('GLOBAL.cancelar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
+      cancelButtonText: this.translate.instant('formulario_pagador.GLOBAL.cancelar'),
     });
   }
 
@@ -86,8 +86,8 @@ export class PopUpManager {
       icon: type,
       showCancelButton: cancelar,
       allowOutsideClick: !cancelar,
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
-      cancelButtonText: this.translate.instant('GLOBAL.cancelar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
+      cancelButtonText: this.translate.instant('formulario_pagador.GLOBAL.cancelar'),
     });
   }
 
@@ -97,8 +97,8 @@ export class PopUpManager {
       html: form.html,
       showCancelButton: cancelar,
       allowOutsideClick: !cancelar,
-      confirmButtonText: this.translate.instant('GLOBAL.aceptar'),
-      cancelButtonText: this.translate.instant('GLOBAL.cancelar'),
+      confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
+      cancelButtonText: this.translate.instant('formulario_pagador.GLOBAL.cancelar'),
       preConfirm: () => {
         const results: any = {};
         form.ids.forEach(id => {
