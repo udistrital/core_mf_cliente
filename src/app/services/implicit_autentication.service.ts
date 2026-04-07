@@ -115,17 +115,17 @@ export class ImplicitAutenticationService {
 
       const userPayload = { user: payload };
       const userServiceResponse = { userService: res };
+      // if (!res.role || res.role.length === 0) {
+      //   res.role = ['ASPIRANTE'];
+      // } else {
+      //   const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
+      //   const hasDisallowedRoles = res.role.some((role: any) => !allowedRoles.includes(role));
 
-      if (!res.role || res.role.length === 0) {
-        res.role = ['ASPIRANTE'];
-      } else {
-        const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
-        const hasDisallowedRoles = res.role.some((role: any) => !allowedRoles.includes(role));
-
-        if (!hasDisallowedRoles && !res.role.includes('ASPIRANTE')) {
-          res.role.push('ASPIRANTE');
-        }
-      }
+      //   if (!hasDisallowedRoles && !res.role.includes('ASPIRANTE')) {
+      //     res.role.push('ASPIRANTE');
+      //   }
+      // }
+      res.role.push('ASPIRANTE');
 
       localStorage.setItem(
         'user',
