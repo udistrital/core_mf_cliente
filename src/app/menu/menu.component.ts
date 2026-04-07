@@ -1,6 +1,5 @@
 import {
   Component,
-  HostBinding,
   Input,
   NO_ERRORS_SCHEMA,
   OnInit,
@@ -41,7 +40,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   ],
 })
 export class MenuComponent implements OnInit {
-  select: any = false;
+  select: boolean = false;
+
   @Input() item!: NavItem;
   @Input() depth: number = 0;
   @Input() navItems: NavItem[] = [];
@@ -56,7 +56,7 @@ export class MenuComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.item.expanded) {
+    if (this.item?.expanded) {
       this.select = true;
     }
   }
@@ -65,8 +65,24 @@ export class MenuComponent implements OnInit {
     localStorage.setItem('select', btoa(menuId));
   }
 
-  onItemSelected(item: NavItem) {
-    if (!item.Opciones || item.Opciones.length === 0) {
+  getMenuChildren(item: NavItem): NavItem[] {
+    return (item.Opciones || []).filter(
+      (child: NavItem) => child.TipoOpcion === 'Menú'
+    );
+  }
+
+  hasMenuChildren(item: NavItem): boolean {
+    return this.getMenuChildren(item).length > 0;
+  }
+
+  onItemSelected(item: NavItem): void {
+    if (item.TipoOpcion !== 'Menú') {
+      return;
+    }
+
+    const menuChildren = this.getMenuChildren(item);
+
+    if (menuChildren.length === 0) {
       if (!item.Id || item.Nombre === 'Inicio') {
         localStorage.removeItem('select');
         this.navService.collapseAllMenus();
@@ -79,12 +95,9 @@ export class MenuComponent implements OnInit {
       this.navService.goTo(item.Url?.replace('/pages', '') || '');
       return;
     }
-    if (item.Opciones && item.Opciones.length > 0) {
 
-      this.navService.collapseAllMenusExcept(item.Id || '');
-
-      this.select = true;
-      item.expanded = !item.expanded;
-    }
+    this.navService.collapseAllMenusExcept(item.Id || '');
+    this.select = true;
+    item.expanded = !item.expanded;
   }
 }
