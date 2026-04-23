@@ -1,241 +1,256 @@
-<form novalidate [formGroup]="revisionForm" class="dinamic-form">
+<mat-card class="pagador-card">
+  <mat-card-header class="pagador-card__header">
+    <mat-card-title>{{ 'formulario_pagador.pagador.formulario_pagador' | translate }}</mat-card-title>
+    <mat-card-subtitle>{{ 'formulario_pagador.GLOBAL.campos_obligatorios' | translate }}</mat-card-subtitle>
+  </mat-card-header>
 
-  <small class="text-muted">{{ 'formulario_pagador.GLOBAL.campos_obligatorios' | translate }}</small>
+  <mat-divider></mat-divider>
 
-  <!-- FORMULARIO PAGADOR -->
-  <fieldset class="fieldseter">
-    <legend>{{ 'formulario_pagador.pagador.formulario_pagador' | translate }}</legend>
+  <mat-card-content>
+    <form novalidate [formGroup]="revisionForm" class="pagador-form">
+      <section class="form-section">
+        <div class="grid-3">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'formulario_pagador.GLOBAL.naturaleza' | translate }}</mat-label>
+            <mat-select formControlName="naturaleza" (selectionChange)="onNaturalezaChange($event)">
+              <mat-option *ngFor="let n of naturalezas" [value]="n.value">
+                {{ n.nombre | translate }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="revisionForm.get('naturaleza')?.hasError('required')">
+              {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+            </mat-error>
+          </mat-form-field>
 
-    <!-- Sección de identificación -->
-    <div class="grid-3">
-      <mat-form-field appearance="fill">
-        <mat-label>{{ 'formulario_pagador.GLOBAL.naturaleza' | translate }}</mat-label>
-        <mat-select formControlName="naturaleza" (selectionChange)="onNaturalezaChange($event)">
-          <mat-option *ngFor="let n of naturalezas" [value]="n.value">
-            {{ n.nombre | translate }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="revisionForm.get('naturaleza')?.hasError('required')">
-          {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-        </mat-error>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'formulario_pagador.GLOBAL.tipo_documento' | translate }}</mat-label>
+            <mat-select formControlName="tipoDocumento">
+              <mat-option value="C">Cédula de ciudadanía</mat-option>
+              <mat-option value="E">Cédula de extranjería</mat-option>
+              <mat-option value="P">Pasaporte</mat-option>
+              <mat-option value="T">Cédula de extranjería</mat-option>
+              <mat-option value="N">NIT</mat-option>
+              <mat-option value="X">NIT extranjería</mat-option>
+            </mat-select>
+            <mat-error *ngIf="revisionForm.get('tipoDocumento')?.hasError('required')">
+              {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+            </mat-error>
+          </mat-form-field>
 
-      <mat-form-field appearance="fill">
-        <mat-label>{{ 'formulario_pagador.GLOBAL.tipo_documento' | translate }}</mat-label>
-        <mat-select formControlName="tipoDocumento">
-          <mat-option value="C">Cédula de ciudadanía</mat-option>
-          <mat-option value="E">Cédula de extranjería</mat-option>
-          <mat-option value="P">Pasaporte</mat-option>
-          <mat-option value="T">Cédula de extranjería</mat-option>
-          <mat-option value="N">NIT</mat-option>
-          <mat-option value="X">NIT extranjería</mat-option>
-        </mat-select>
-        <mat-error *ngIf="revisionForm.get('tipoDocumento')?.hasError('required')">
-          {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-        </mat-error>
-      </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'formulario_pagador.GLOBAL.numero_documento' | translate }}</mat-label>
+            <input matInput type="text" formControlName="numeroDocumento">
+            <mat-error *ngIf="revisionForm.get('numeroDocumento')?.hasError('required')">
+              {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+            </mat-error>
+            <mat-error *ngIf="revisionForm.get('numeroDocumento')?.hasError('pattern')">
+              {{ 'formulario_pagador.ERROR.sin_puntos_comas' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
 
-      <mat-form-field appearance="fill">
-        <mat-label>{{ 'formulario_pagador.GLOBAL.numero_documento' | translate }}</mat-label>
-        <input matInput type="text" formControlName="numeroDocumento">
-        <mat-error *ngIf="revisionForm.get('numeroDocumento')?.hasError('required')">
-          {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-        </mat-error>
-        <mat-error *ngIf="revisionForm.get('numeroDocumento')?.hasError('pattern')">
-          {{ 'formulario_pagador.ERROR.sin_puntos_comas' | translate }}
-        </mat-error>
-      </mat-form-field>
-    </div>
+        <ng-container *ngIf="!esJuridica">
+          <div class="grid-2">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.primer_apellido' | translate }}</mat-label>
+              <input matInput formControlName="primerApellido">
+              <mat-error *ngIf="revisionForm.get('primerApellido')?.hasError('required')">
+                {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+              </mat-error>
+            </mat-form-field>
 
-    <!-- Persona Natural -->
-    <ng-container *ngIf="!esJuridica">
-      <div class="grid-2">
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.primer_apellido' | translate }}</mat-label>
-          <input matInput formControlName="primerApellido">
-          <mat-error *ngIf="revisionForm.get('primerApellido')?.hasError('required')">
-            {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-          </mat-error>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.segundo_apellido' | translate }}</mat-label>
+              <input matInput formControlName="segundoApellido">
+            </mat-form-field>
+          </div>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.segundo_apellido' | translate }}</mat-label>
-          <input matInput formControlName="segundoApellido">
-        </mat-form-field>
-      </div>
+          <div class="grid-2">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.primer_nombre' | translate }}</mat-label>
+              <input matInput formControlName="primerNombre">
+              <mat-error *ngIf="revisionForm.get('primerNombre')?.hasError('required')">
+                {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+              </mat-error>
+            </mat-form-field>
 
-      <div class="grid-2">
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.primer_nombre' | translate }}</mat-label>
-          <input matInput formControlName="primerNombre">
-          <mat-error *ngIf="revisionForm.get('primerNombre')?.hasError('required')">
-            {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-          </mat-error>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.segundo_nombre' | translate }}</mat-label>
+              <input matInput formControlName="segundoNombre">
+            </mat-form-field>
+          </div>
+        </ng-container>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.segundo_nombre' | translate }}</mat-label>
-          <input matInput formControlName="segundoNombre">
-        </mat-form-field>
-      </div>
-    </ng-container>
+        <ng-container *ngIf="esJuridica">
+          <div class="grid-3">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.digito_verificacion' | translate }}</mat-label>
+              <input matInput formControlName="digito_verificacion">
+              <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('required')">
+                {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+              </mat-error>
+              <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('pattern')">
+                {{ 'formulario_pagador.GLOBAL.numero_fuera_rango' | translate }}
+              </mat-error>
+              <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('digitoIncorrecto')">
+                {{ 'formulario_pagador.GLOBAL.digito_verificacion_incorrecto' | translate }}
+              </mat-error>
+            </mat-form-field>
 
-    <!-- Persona Jurídica -->
-    <ng-container *ngIf="esJuridica">
-      <div class="grid-3">
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.digito_verificacion' | translate }}</mat-label>
-          <input matInput formControlName="digito_verificacion">
-          <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('required')">
-            {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-          </mat-error>
-          <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('pattern')">
-            {{ 'formulario_pagador.GLOBAL.numero_fuera_rango' | translate }}
-          </mat-error>
-          <mat-error *ngIf="revisionForm.get('digito_verificacion')?.hasError('digitoIncorrecto')">
-            {{ 'formulario_pagador.GLOBAL.digito_verificacion_incorrecto' | translate }}
-          </mat-error>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="col-span-2">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.razon_social' | translate }}</mat-label>
+              <input matInput formControlName="razonSocial">
+              <mat-hint align="end">{{ revisionForm.get('razonSocial')?.value?.length || 0 }}/100</mat-hint>
+              <mat-error *ngIf="revisionForm.get('razonSocial')?.hasError('required')">
+                {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+              </mat-error>
+              <mat-error *ngIf="revisionForm.get('razonSocial')?.hasError('maxlength')">
+                {{ 'formulario_pagador.GLOBAL.tamano_superado_razon' | translate }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </ng-container>
 
-        <mat-form-field appearance="fill" class="col-span-2">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.razon_social' | translate }}</mat-label>
-          <input matInput formControlName="razonSocial">
-          <mat-hint align="end">{{revisionForm.get('razonSocial').value?.length || 0}}/100</mat-hint>
-          <mat-error *ngIf="revisionForm.get('razonSocial')?.hasError('required')">
-            {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-          </mat-error>
-          <mat-error *ngIf="revisionForm.get('razonSocial')?.hasError('maxlength')">
-            {{ 'formulario_pagador.GLOBAL.tamano_superado_razon' | translate }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-    </ng-container>
+        <mat-divider></mat-divider>
 
-    <!-- Vista previa de dirección -->
-    <div *ngIf="!editandoDireccion && direccionPreview" class="p-3 border rounded bg-light mb-3">
-      <strong>{{ direccionPreview }}</strong>
-      <button mat-icon-button color="primary" (click)="iniciarEdicionDireccion()" matTooltip="{{ 'formulario_pagador.GLOBAL.editar_direccion' | translate }}">
-        <mat-icon>edit</mat-icon>
-      </button>
-    </div>
+        <div class="section-label">
+          <mat-icon color="primary">home</mat-icon>
+          <span>{{ 'formulario_pagador.GLOBAL.direccion_completa' | translate }}</span>
+        </div>
 
-    <!-- Campos de edición de dirección -->
-    <div *ngIf="mostrarCamposDireccion && editandoDireccion">
-      <div class="grid-direccion">
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.tipo_via' | translate }}</mat-label>
-          <mat-select formControlName="tipoVia">
-            <mat-option *ngFor="let via of vias" [value]="via.Abreviatura">
-              {{ via.Nomenclatura | translate }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        <mat-card appearance="outlined" *ngIf="!editandoDireccion && direccionPreview" class="address-card">
+          <mat-card-content class="address-card__content">
+            <div class="address-card__text">{{ direccionPreview }}</div>
+            <button mat-icon-button color="primary" type="button" (click)="iniciarEdicionDireccion()" matTooltip="{{ 'formulario_pagador.GLOBAL.editar_direccion' | translate }}">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </mat-card-content>
+        </mat-card>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.numero' | translate }}</mat-label>
-          <input matInput formControlName="numeroVia">
-          <mat-error *ngIf="revisionForm.get('numeroVia')?.hasError('required')">
-            {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-          </mat-error>
-        </mat-form-field>
+        <div *ngIf="mostrarCamposDireccion && editandoDireccion">
+          <div class="grid-direccion">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.tipo_via' | translate }}</mat-label>
+              <mat-select formControlName="tipoVia">
+                <mat-option *ngFor="let via of vias" [value]="via.Abreviatura">
+                  {{ via.Nomenclatura | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
-        <span class="separador">#</span>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.numero' | translate }}</mat-label>
+              <input matInput formControlName="numeroVia">
+              <mat-error *ngIf="revisionForm.get('numeroVia')?.hasError('required')">
+                {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+              </mat-error>
+            </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.numero_secundario' | translate }}</mat-label>
-          <input matInput formControlName="numeroSecundario">
-          <mat-error *ngIf="revisionForm.get('numeroSecundario')?.hasError('required')">
-            {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-          </mat-error>
-        </mat-form-field>
+            <span class="separador">#</span>
 
-        <span class="separador">-</span>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.numero_secundario' | translate }}</mat-label>
+              <input matInput formControlName="numeroSecundario">
+              <mat-error *ngIf="revisionForm.get('numeroSecundario')?.hasError('required')">
+                {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+              </mat-error>
+            </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.complemento' | translate }}</mat-label>
-          <input matInput formControlName="complementoDireccion">
-        </mat-form-field>
-      </div>
+            <span class="separador">-</span>
 
-      <!-- Interior 1 y 2 -->
-      <div class="grid-4">
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.interior_1' | translate }}</mat-label>
-          <mat-select formControlName="tipoInterior1">
-            <mat-option *ngFor="let int of interior" [value]="int.Abreviatura">
-              {{ int.Nomenclatura | translate }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.complemento' | translate }}</mat-label>
+              <input matInput formControlName="complementoDireccion">
+            </mat-form-field>
+          </div>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.numero' | translate }}</mat-label>
-          <input matInput formControlName="numeroInterior1">
-        </mat-form-field>
+          <div class="grid-4">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.interior_1' | translate }}</mat-label>
+              <mat-select formControlName="tipoInterior1">
+                <mat-option *ngFor="let int of interior" [value]="int.Abreviatura">
+                  {{ int.Nomenclatura | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.interior_2' | translate }}</mat-label>
-          <mat-select formControlName="tipoInterior2">
-            <mat-option *ngFor="let int of interior" [value]="int.Abreviatura">
-              {{ int.Nomenclatura | translate }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.numero' | translate }}</mat-label>
+              <input matInput formControlName="numeroInterior1">
+            </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>{{ 'formulario_pagador.GLOBAL.numero' | translate }}</mat-label>
-          <input matInput formControlName="numeroInterior2">
-        </mat-form-field>
-      </div>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.interior_2' | translate }}</mat-label>
+              <mat-select formControlName="tipoInterior2">
+                <mat-option *ngFor="let int of interior" [value]="int.Abreviatura">
+                  {{ int.Nomenclatura | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
-      <div class="full-width border p-2 rounded bg-light mt-2">
-        <strong>{{ 'formulario_pagador.GLOBAL.direccion_completa' | translate }}:</strong> {{ direccionPreview || 'Pendiente de completar' }}
-      </div>
-    </div>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'formulario_pagador.GLOBAL.numero' | translate }}</mat-label>
+              <input matInput formControlName="numeroInterior2">
+            </mat-form-field>
+          </div>
 
-    <div class="grid-2">
-      <mat-form-field appearance="fill">
-        <mat-label>{{ 'formulario_pagador.GLOBAL.telefono' | translate }}</mat-label>
-        <input matInput type="tel" formControlName="telefono">
-        <mat-error *ngIf="revisionForm.get('telefono')?.hasError('required')">
-          {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-        </mat-error>
-      </mat-form-field>
+          <mat-card appearance="outlined" class="address-preview">
+            <mat-card-content>
+              <strong>{{ 'formulario_pagador.GLOBAL.direccion_completa' | translate }}:</strong>
+              {{ direccionPreview || 'Pendiente de completar' }}
+            </mat-card-content>
+          </mat-card>
+        </div>
 
-      <mat-form-field appearance="fill">
-        <mat-label>{{ 'formulario_pagador.GLOBAL.correo' | translate }}</mat-label>
-        <input matInput type="email" formControlName="correo">
-        <mat-error *ngIf="revisionForm.get('correo')?.hasError('required')">
-          {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
-        </mat-error>
-      </mat-form-field>
-    </div>
+        <mat-divider></mat-divider>
 
-  </fieldset>
+        <div class="grid-2">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'formulario_pagador.GLOBAL.telefono' | translate }}</mat-label>
+            <input matInput type="tel" formControlName="telefono">
+            <mat-error *ngIf="revisionForm.get('telefono')?.hasError('required')">
+              {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+            </mat-error>
+          </mat-form-field>
 
-  <!-- Confirmación -->
-  <div class="checkbox">
-    <mat-checkbox formControlName="aprobado">
-      {{ 'formulario_pagador.GLOBAL.confirmo_informacion' | translate }}
-    </mat-checkbox>
-  </div>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'formulario_pagador.GLOBAL.correo' | translate }}</mat-label>
+            <input matInput type="email" formControlName="correo">
+            <mat-error *ngIf="revisionForm.get('correo')?.hasError('required')">
+              {{ 'formulario_pagador.GLOBAL.falta_campo' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </section>
 
-  <!-- Botones -->
-  <div class="acciones">
-          <button mat-raised-button color="primary"
-                  (click)="continuar()" 
-                  [disabled]="loading || formularioModificado || deshabilitarBotonContinuar"
-                  class="px-4 py-2 mr-2">
-            {{ 'formulario_pagador.GLOBAL.continuar' | translate }}
-          </button>
-          <button mat-raised-button color="primary" 
-                  (click)="guardarRevision()" 
-                  [disabled]="loading || revisionForm.invalid || !formularioModificado" 
-                  class="px-4 py-2">
-            <mat-icon *ngIf="revisionForm.valid">check_circle</mat-icon>
-            <mat-icon *ngIf="revisionForm.invalid && revisionForm.touched" color="warn">error</mat-icon>
-            {{ 'formulario_pagador.GLOBAL.guardar' | translate }}
-          </button>
-  </div>
+      <mat-card appearance="outlined" class="confirmation-card">
+        <mat-card-content>
+          <mat-checkbox formControlName="aprobado">
+            {{ 'formulario_pagador.GLOBAL.confirmo_informacion' | translate }}
+          </mat-checkbox>
+        </mat-card-content>
+      </mat-card>
+    </form>
+  </mat-card-content>
 
-</form>
+  <mat-divider></mat-divider>
+
+  <mat-card-actions align="end" class="pagador-card__actions">
+    <button mat-stroked-button
+            color="primary"
+            type="button"
+            (click)="continuar()"
+            [disabled]="loading || !revisionForm.get('aprobado')?.value || formularioModificado || deshabilitarBotonContinuar">
+      {{ 'formulario_pagador.GLOBAL.continuar' | translate }}
+    </button>
+    <button mat-flat-button
+            color="primary"
+            type="button"
+            (click)="guardarRevision()"
+            [disabled]="loading || !revisionForm.get('aprobado')?.value || revisionForm.invalid || !formularioModificado">
+      <mat-icon *ngIf="revisionForm.valid">check_circle</mat-icon>
+      <mat-icon *ngIf="revisionForm.invalid && revisionForm.touched" color="warn">error</mat-icon>
+      {{ 'formulario_pagador.GLOBAL.guardar' | translate }}
+    </button>
+  </mat-card-actions>
+</mat-card>
