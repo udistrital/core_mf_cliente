@@ -4,6 +4,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSelectChange } from '@angular/material/select';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Validators, FormGroup, FormBuilder, AbstractControl, ValidatorFn, ValidationErrors, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -28,6 +33,11 @@ import Swal from 'sweetalert2';
     ReactiveFormsModule,
     TranslateModule,
     MatDialogModule,
+    MatCardModule,
+    MatDividerModule,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatSelectModule,
     MatFormFieldModule,
     MatInputModule,
@@ -135,6 +145,9 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
    * Continúa con el proceso según la acción seleccionada
    */
   async continuar() {
+    if (!this.revisionForm.get('aprobado')?.value) {
+      return;
+    }
     if (this.accion === 'descargar') {
       this.dialogRef.close({ continuar: true });
     } else if (this.accion === 'pagar') {
@@ -432,6 +445,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
                 this.deshabilitarBotonContinuar = false;
                 this.mostrarCamposDireccion = false;
                 this.editandoDireccion = false;
+                this.cdr.detectChanges();
               } else {
                 // Error:  registros
                 this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.pagador.error_multiples_registros'));
@@ -441,6 +455,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
               // No hay datos existentes, mostrar campos de dirección para edición
               this.mostrarCamposDireccion = true;
               this.editandoDireccion = true;
+              this.cdr.detectChanges();
             }
           },
           (error: HttpErrorResponse) => {
@@ -448,6 +463,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
             // En caso de error, mostrar campos de dirección para edición
             this.mostrarCamposDireccion = true;
             this.editandoDireccion = true;
+            this.cdr.detectChanges();
           }
         )
     );
@@ -504,6 +520,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       // Actualizar validadores
       this.actualizarValidadoresPorNaturaleza(this.datosPagador.TERPA_NATURALEZA);
       this.actualizarValidacionDigito();
+      this.cdr.detectChanges();
     } catch (error) {
       this.popUpManager.showErrorToast(this.translate.instant('formulario_pagador.ERROR.cargar_datos'));
     }
@@ -940,7 +957,4 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
     return String(valor).trim().replace(/\s+/g, ' ');
   }
 }
-
-
-
 

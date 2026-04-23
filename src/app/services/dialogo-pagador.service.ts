@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, NgZone } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DialogoFormularioPagadorComponent } from '../dialogo-formulario-pagador/dialogo-formulario-pagador.component';
 
@@ -7,7 +7,11 @@ import { DialogoFormularioPagadorComponent } from '../dialogo-formulario-pagador
 })
 export class DialogoPagadorService {
 
-  constructor(private injector: Injector, private matDialog: MatDialog) {}
+  constructor(
+    private injector: Injector,
+    private matDialog: MatDialog,
+    private ngZone: NgZone
+  ) {}
 
   /**
    * Abre el diálogo del formulario de pagador
@@ -15,11 +19,13 @@ export class DialogoPagadorService {
    * @returns MatDialogRef con el resultado del diálogo
    */
   openDialogoPagador(data: any = {}): MatDialogRef<DialogoFormularioPagadorComponent> {
-    return this.matDialog.open(DialogoFormularioPagadorComponent, {
-      width: '900px',
-      maxWidth: '95vw',
-      disableClose: false,
-      data: data
-    });
+    return this.ngZone.run(() =>
+      this.matDialog.open(DialogoFormularioPagadorComponent, {
+        width: '900px',
+        maxWidth: '95vw',
+        disableClose: false,
+        data: data
+      })
+    );
   }
 }
