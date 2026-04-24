@@ -148,11 +148,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
     if (!this.revisionForm.get('aprobado')?.value) {
       return;
     }
-    if (this.accion === 'descargar') {
-      this.dialogRef.close({ continuar: true });
-    } else if (this.accion === 'pagar') {
-      this.dialogRef.close({ continuar: true });
-    }
+    this.cerrarFlujoExitoso();
   }
   
   ngOnDestroy() {
@@ -306,13 +302,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
               this.editandoDireccion = false;
               this.mostrarCamposDireccion = false;
               
-              if (this.accion === 'descargar') {
-                // Usar el nuevo método que maneja todo el proceso
-                // this.descargarReciboCompletoYCerrar();
-                this.dialogRef.close({ continuar: true });
-              } else if (this.accion === 'pagar') {
-                this.dialogRef.close({ continuar: true });
-              }
+              this.cerrarFlujoExitoso();
             })
           } else {
             this.revisionForm.patchValue({ aprobado: false });
@@ -373,7 +363,9 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
           .then(() => {
             this.setLoading(false);
             this.cerrarAlertaCarga();
-            this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_actualizado'));
+            return this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_actualizado'));
+          })
+          .then(() => {
             resolve();
           })
           .catch(error => {
@@ -392,7 +384,9 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
           .then(() => {
             this.setLoading(false);
             this.cerrarAlertaCarga();
-            this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_guardado'));
+            return this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_guardado'));
+          })
+          .then(() => {
             resolve();
           })
           .catch(error => {
@@ -971,6 +965,13 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
     if (Swal.isVisible()) {
       Swal.close();
     }
+  }
+
+  private cerrarFlujoExitoso(): void {
+    this.dialogRef.close({
+      continuar: true,
+      accion: this.accion,
+    });
   }
 
 

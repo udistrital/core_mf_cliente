@@ -50,8 +50,8 @@ export class PopUpManager {
     });
   }
 
-  showSuccessAlert(text: string) {
-    Swal.fire({
+  showSuccessAlert(text: string): Promise<any> {
+    return Swal.fire({
       icon: 'success',
       title: this.translate.instant('formulario_pagador.GLOBAL.operacion_exitosa'),
       text: text,
