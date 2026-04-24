@@ -1,134 +1,141 @@
-/* Contenedor general del formulario */
-.dinamic-form {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 25px 30px;
-  max-height: 85vh;
-  overflow-y: auto;
+:host {
+  display: block;
+}
+
+.pagador-card {
+  overflow: hidden;
+  border-top: 4px solid var(--primary);
+  box-shadow: 0 10px 24px rgba(44, 51, 73, 0.12);
+}
+
+.pagador-card__header {
+  padding-bottom: 0.5rem;
+}
+
+.pagador-card__actions {
+  padding: 1rem 1.5rem 1.25rem;
+  gap: 0.75rem;
+}
+
+.pagador-form {
+  padding-top: 1rem;
+}
+
+.form-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-
-  small.text-muted {
-    font-size: 0.85rem;
-    color: #6c757d;
-  }
+  gap: 1rem;
 }
 
-/* Fieldset general */
-.fieldseter {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px 25px;
-  background-color: white;
-
-  legend {
-    padding: 0 10px;
-    font-weight: 700;
-    font-size: 1rem;
-  }
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--primary);
 }
 
-/* Grids para organizar campos */
-.grid-2 {
+.grid-2,
+.grid-3,
+.grid-4,
+.grid-direccion {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  gap: 1rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .grid-direccion {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  align-items: end;
-
-  .separador {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-  }
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.15fr);
+  align-items: center;
 }
 
-/* Full width para bloques de dirección completa */
-.full-width {
+.col-span-2 {
+  grid-column: span 2;
+}
+
+.separador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.address-card,
+.address-preview,
+.confirmation-card {
+  background: #fff;
+}
+
+.address-card__content {
   width: 100%;
+  padding: 0.25rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-/* Mat form fields */
+.address-card__text {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.74);
+}
+
+.address-preview mat-card-content,
+.confirmation-card mat-card-content {
+  padding: 1rem 1rem 0.9rem;
+}
+
 mat-form-field {
   width: 100%;
+}
 
-  mat-label {
-    font-weight: 600;
-    color: #333;
+@media (max-width: 900px) {
+  .grid-3,
+  .grid-4,
+  .grid-direccion {
+    grid-template-columns: 1fr 1fr;
   }
 
-  input, mat-select {
-    color: #000;
+  .col-span-2 {
+    grid-column: auto;
   }
 
-  mat-error {
-    font-size: 0.8rem;
-    color: #d32f2f;
-  }
-
-  mat-hint {
-    font-size: 0.75rem;
-    color: #6c757d;
+  .separador {
+    display: none;
   }
 }
 
-/* Checkbox */
-.checkbox {
-  margin: 10px 0;
-  mat-checkbox {
-    font-weight: 500;
-  }
-}
-
-/* Botones finales */
-.acciones {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-
-  button {
-    min-width: 120px;
-  }
-}
-
-/* Tarjetas de dirección */
-.border {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 10px;
-}
-
-.bg-light {
-  background-color: #f8f9fa;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .grid-2,
   .grid-3,
   .grid-4,
   .grid-direccion {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
+  }
+
+  .pagador-card__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .pagador-card__actions button {
+    width: 100%;
+  }
+
+  .address-card__content {
+    align-items: flex-start;
   }
 }

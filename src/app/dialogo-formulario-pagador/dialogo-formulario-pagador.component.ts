@@ -4,6 +4,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSelectChange } from '@angular/material/select';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Validators, FormGroup, FormBuilder, AbstractControl, ValidatorFn, ValidationErrors, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -28,6 +33,11 @@ import Swal from 'sweetalert2';
     ReactiveFormsModule,
     TranslateModule,
     MatDialogModule,
+    MatCardModule,
+    MatDividerModule,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatSelectModule,
     MatFormFieldModule,
     MatInputModule,
@@ -135,11 +145,10 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
    * Continúa con el proceso según la acción seleccionada
    */
   async continuar() {
-    if (this.accion === 'descargar') {
-      this.dialogRef.close({ continuar: true });
-    } else if (this.accion === 'pagar') {
-      this.dialogRef.close({ continuar: true });
+    if (!this.revisionForm.get('aprobado')?.value) {
+      return;
     }
+    this.cerrarFlujoExitoso();
   }
   
   ngOnDestroy() {
@@ -293,16 +302,8 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
               this.editandoDireccion = false;
               this.mostrarCamposDireccion = false;
               
-              if (this.accion === 'descargar') {
-                // Usar el nuevo método que maneja todo el proceso
-                // this.descargarReciboCompletoYCerrar();
-                this.dialogRef.close({ continuar: true });
-              } else if (this.accion === 'pagar') {
-                this.dialogRef.close({ continuar: true });
-              }
-            }).catch(error => {
-              this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.ERROR.guardar_pagador'));
-            });
+              this.cerrarFlujoExitoso();
+            })
           } else {
             this.revisionForm.patchValue({ aprobado: false });
           }
@@ -342,6 +343,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       }
       
       this.setLoading(true);
+      this.mostrarAlertaCargaGuardado();
       
       // Extraer número de recibo
       const numeroRecibo = Array.isArray(this.data.info_recibo.Comprobante) 
@@ -360,16 +362,20 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
           .then(() => this.crearNuevoRegistro(numeroRecibo))
           .then(() => {
             this.setLoading(false);
-            this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_actualizado'));
+            this.cerrarAlertaCarga();
+            return this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_actualizado'));
+          })
+          .then(() => {
             resolve();
           })
           .catch(error => {
-            this.setLoading(false);
-            this.popUpManager.showErrorAlert(
-              error.message === 'Error al inactivar el registro existente' 
-                ? this.translate.instant('formulario_pagador.ERROR.inactivar_registro')
-                : this.translate.instant('formulario_pagador.ERROR.actualizar_pagador')
-            );
+            if (error instanceof Error && error.message === 'Error al inactivar el registro existente') {
+              this.setLoading(false);
+              this.cerrarAlertaCarga();
+              this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.ERROR.inactivar_registro'));
+            } else {
+              this.manejarError(error, 'formulario_pagador.ERROR.actualizar_pagador');
+            }
             reject(error);
           });
       } else {
@@ -377,12 +383,14 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
         this.crearNuevoRegistro(numeroRecibo)
           .then(() => {
             this.setLoading(false);
-            this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_guardado'));
+            this.cerrarAlertaCarga();
+            return this.popUpManager.showSuccessAlert(this.translate.instant('formulario_pagador.recibo_pago.pagador_guardado'));
+          })
+          .then(() => {
             resolve();
           })
           .catch(error => {
-            this.setLoading(false);
-            this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.ERROR.guardar_pagador'));
+            this.manejarError(error, 'formulario_pagador.ERROR.guardar_pagador');
             reject(error);
           });
       }
@@ -432,6 +440,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
                 this.deshabilitarBotonContinuar = false;
                 this.mostrarCamposDireccion = false;
                 this.editandoDireccion = false;
+                this.cdr.detectChanges();
               } else {
                 // Error:  registros
                 this.popUpManager.showErrorAlert(this.translate.instant('formulario_pagador.pagador.error_multiples_registros'));
@@ -441,6 +450,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
               // No hay datos existentes, mostrar campos de dirección para edición
               this.mostrarCamposDireccion = true;
               this.editandoDireccion = true;
+              this.cdr.detectChanges();
             }
           },
           (error: HttpErrorResponse) => {
@@ -448,6 +458,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
             // En caso de error, mostrar campos de dirección para edición
             this.mostrarCamposDireccion = true;
             this.editandoDireccion = true;
+            this.cdr.detectChanges();
           }
         )
     );
@@ -504,6 +515,7 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
       // Actualizar validadores
       this.actualizarValidadoresPorNaturaleza(this.datosPagador.TERPA_NATURALEZA);
       this.actualizarValidacionDigito();
+      this.cdr.detectChanges();
     } catch (error) {
       this.popUpManager.showErrorToast(this.translate.instant('formulario_pagador.ERROR.cargar_datos'));
     }
@@ -908,15 +920,23 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
   /**
    * Manejo centralizado de errores
    */
-  private manejarError(error: HttpErrorResponse, contexto: string): void {
+  private manejarError(error: unknown, contexto: string): void {
     this.setLoading(false);
-    
+    this.cerrarAlertaCarga();
+
+    const errorHttp = error instanceof HttpErrorResponse ? error : null;
+    const status = errorHttp?.status;
+    const translatedStatus = status ? this.translate.instant('formulario_pagador.ERROR.' + status) : '';
+    const translatedContext = this.translate.instant(contexto);
+    const text = translatedStatus && translatedStatus !== ('formulario_pagador.ERROR.' + status)
+      ? translatedStatus
+      : translatedContext;
+
     Swal.fire({
       icon: 'error',
-      title: error.status + '',
-      text: this.translate.instant('formulario_pagador.ERROR.' + error.status),
-      footer: this.translate.instant('formulario_pagador.GLOBAL.cargar') + ' - ' +
-        this.translate.instant(contexto),
+      title: status ? String(status) : this.translate.instant('formulario_pagador.ERROR.general'),
+      text,
+      footer: translatedContext,
       confirmButtonText: this.translate.instant('formulario_pagador.GLOBAL.aceptar'),
     });
   }
@@ -927,6 +947,31 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
    */
   private setLoading(state: boolean): void {
     this.loading = state;
+  }
+
+  private mostrarAlertaCargaGuardado(): void {
+    Swal.fire({
+      title: this.translate.instant('formulario_pagador.GLOBAL.guardar'),
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
+
+  private cerrarAlertaCarga(): void {
+    if (Swal.isVisible()) {
+      Swal.close();
+    }
+  }
+
+  private cerrarFlujoExitoso(): void {
+    this.dialogRef.close({
+      continuar: true,
+      accion: this.accion,
+    });
   }
 
 
@@ -940,7 +985,3 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
     return String(valor).trim().replace(/\s+/g, ' ');
   }
 }
-
-
-
-
