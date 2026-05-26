@@ -162,6 +162,57 @@ i {
     border-radius: 50%;
 }
 
+// Variables
+$roles-label-font-size: 9px;
+$roles-option-font-size: 8px;
+$roles-gap: 6px;
+$roles-panel-min-width: 160px;
+$roles-panel-max-width: 200px;
+$select-trigger-height: 9px;
+
+// User block container
+.user-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+// Roles section (label + select)
+.roles_en_sga {
+  display: flex;
+  align-items: center;
+  gap: $roles-gap;
+  margin-top: 2px;
+  font-size: $roles-label-font-size;
+}
+
+// Estilos específicos del mat-select dentro de roles_en_sga
+::ng-deep .roles_en_sga {
+  .mat-mdc-select-trigger {
+    height: $select-trigger-height;
+    align-items: center;
+    font-size: $roles-label-font-size;
+  }
+  .mat-mdc-select-value {
+    font-size: $roles-label-font-size;
+  }
+}
+
+// Panel desplegable (usar panelClass="roles-panel" en mat-select)
+::ng-deep .roles-panel {
+  min-width: $roles-panel-min-width !important;
+  max-width: $roles-panel-max-width !important;
+
+  .mat-mdc-option {
+    font-size: $roles-option-font-size;
+  }
+  .mdc-list-item__primary-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}
+
 @media screen and (max-width: 855px) {
     .user-info {
         //display: none;
