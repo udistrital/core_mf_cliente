@@ -10,11 +10,12 @@ import { TranslateService } from '@ngx-translate/core';
 import { getCookie } from './header/header.component';
 import { ControlSizeContainerService } from './services/controlSizeContainer.service';
 import { ImplicitAutenticationService } from './services/implicit_autentication.service';
+import { FloatingButtonIrisComponent } from './floating-button-iris/floating-button-iris.component';
 
 @Component({
   selector: 'core-mf',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, OasComponent],
+  imports: [CommonModule, RouterOutlet, OasComponent, FloatingButtonIrisComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
