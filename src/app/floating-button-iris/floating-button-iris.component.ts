@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { assetUrl } from '../../single-spa/asset-url';
 
 @Component({
   selector: 'app-floating-button-iris',
@@ -8,6 +9,5 @@ import { Component } from '@angular/core';
   styleUrl: './floating-button-iris.component.scss'
 })
 export class FloatingButtonIrisComponent {
-  // imagenIris = window.__INJECTED_PUBLIC_PATH_BY_SINGLE_SPA__ + 'assets/images/apoyo-tecnico.png';
-  imagenIris = '../../assets/images/apoyo-tecnico.png';
+  imagenIris = assetUrl('images/apoyo-tecnico.png');
 }
