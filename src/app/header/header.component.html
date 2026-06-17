@@ -40,11 +40,20 @@
                 }
             </div>
         }
-        <div class="header-button-user-container" (click)="toogleCerrarSesion()">
-            <span class="material-icons"> account_circle </span>
-            <p class="user-info">{{ username }}</p>
-            <div id="header-button-cerrarsesion-container" (click)="logout()">
-                <p>Cerrar sesión</p>
+        <div class="user-block">
+            <div class="header-button-user-container" (click)="toogleCerrarSesion()">
+                <span class="material-icons"> account_circle </span>
+                <p class="user-info">{{ username }}</p>
+                <div id="header-button-cerrarsesion-container" (click)="logout()">
+                    <p>Cerrar sesión</p>
+                </div>
+            </div>
+            <div class="roles_en_sga">
+                <span>Roles: </span>
+                <mat-select [(value)]="rolSeleccionado" panelClass="roles-panel">
+                    <mat-select-trigger> {{ roles_sga[0] }} </mat-select-trigger>
+                    <mat-option *ngFor="let rol of roles_sga" [value]="rol"> {{ rol }} </mat-option>
+                </mat-select>
             </div>
         </div>
     </div>

@@ -1,3 +1,4 @@
+import './set-public-path';
 import { enableProdMode, NgZone, Injector } from '@angular/core';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';

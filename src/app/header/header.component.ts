@@ -24,6 +24,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '../services/users.service';
 import { NotioasComponent } from '../notioas/notioas.component';
+import { CommonModule } from '@angular/common';
 
 enum VisibilityState {
   Visible = 'visible',
@@ -34,7 +35,7 @@ enum VisibilityState {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [MenuAplicacionesComponent, MatSelectModule, RouterModule, NotioasComponent],
+  imports: [MenuAplicacionesComponent, MatSelectModule, RouterModule, NotioasComponent,CommonModule],
   encapsulation: ViewEncapsulation.Emulated,
   animations: [
     trigger('iconAnimation', [
@@ -82,7 +83,8 @@ export class HeaderComponent implements OnChanges {
 
   langs: string[] = ['es', 'en']; // idiomas que va a soportar nuestra aplicacion
   langCookie: string = 'en';
-
+  roles_sga = [];
+  rolSeleccionado!: string;
   whatLang$ = fromEvent(window, 'lang');
 
   constructor(
@@ -98,6 +100,7 @@ export class HeaderComponent implements OnChanges {
   }
 
   ngOnInit() {
+    this.cargarRoles();
     const up$ = fromEvent(document, 'mouseup');
     up$.subscribe((data: any) => {
       if (this.cerrarSesion) {
@@ -122,6 +125,25 @@ export class HeaderComponent implements OnChanges {
     this.cdr.detectChanges();
   }
 
+  cargarRoles (){
+    // obtener lista de roles
+    const user = (localStorage.getItem('user'));
+    let roleUser = [];
+    if (user) {
+      roleUser = JSON.parse(atob(user)).userService.role;
+    } else {
+      console.error("Sin roles almacenados en localStorage para mostrar");
+    }
+    let roles = roleUser.filter ( (role: string | string[]) => !role.includes('/') );
+    if (roles.length !== 0) {
+      this.roles_sga = roles;
+    } else {
+      roles.push('ASPIRANTE');
+      this.roles_sga = roles;
+    }
+    this.rolSeleccionado = String( this.roles_sga[0] );
+    console.log(this.rolSeleccionado);
+  }
   private subscribeToMenuActivo(): void {
     this.notificacionesService.menuActivo$.subscribe((menuActivo: boolean) => {
       this.menuActivo = menuActivo;
