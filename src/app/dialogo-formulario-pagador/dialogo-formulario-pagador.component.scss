@@ -2,8 +2,12 @@
   display: block;
 }
 
+::ng-deep .dialogo-pagador-panel .mdc-dialog__surface {
+  overflow-y: auto;
+}
+
 .pagador-card {
-  overflow: hidden;
+  overflow-y: auto;
   border-top: 4px solid var(--primary);
   box-shadow: 0 10px 24px rgba(44, 51, 73, 0.12);
 }
