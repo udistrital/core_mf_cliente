@@ -23,6 +23,8 @@ export class DialogoPagadorService {
       this.matDialog.open(DialogoFormularioPagadorComponent, {
         width: '900px',
         maxWidth: '95vw',
+        maxHeight: '90vh',
+        panelClass: 'dialogo-pagador-panel',
         disableClose: false,
         data: data
       })
