@@ -23,5 +23,6 @@ export const environment = {
   // INSCRIPCION_MID_SERVICE: 'http://localhost:8543/v1/',
   apiUrl: 'https://pruebascoreclientes.portaloas.udistrital.edu.co/',
   // FACTURACION_ELECTONICA_MID: 'http://localhost:8080/v1/',
-  FACTURACION_ELECTONICA_MID: "https://pruebasapi.intranetoas.udistrital.edu.co/facturacion_electronica_mid/v1/",
+  // FACTURACION_ELECTONICA_MID: "http://localhost:8080/v1/",
+  FACTURACION_ELECTONICA_MID:'https://autenticacion.portaloas.udistrital.edu.co/apioas/facturacion_electronica_mid/v1/'
 };

@@ -63,6 +63,12 @@ export class ImplicitAutenticationService {
     this.environment = entorno;
     const id_token = window.localStorage.getItem('id_token');
 
+    if (id_token && this.isSessionExpired(id_token)) {
+      this.expireLocalSession();
+      this.clearUrl();
+      return;
+    }
+
     if (!id_token) {
       const params: { [k: string]: any } = {};
       const regex = /([^&=]+)=([^&]*)/g;
@@ -244,8 +250,7 @@ export class ImplicitAutenticationService {
 
     const expiresIn = expires.getTime() - Date.now();
     if (expiresIn < this.timeLogoutBefore) {
-      this.clearStorage();
-      this.logoutSubject.next('logout-auto-only-localstorage');
+      this.expireLocalSession();
       return;
     }
 
@@ -288,6 +293,31 @@ export class ImplicitAutenticationService {
   public expired(): boolean {
     const expires_at = localStorage.getItem('expires_at');
     return new Date(expires_at ?? new Date().toString()) < new Date();
+  }
+
+  private isSessionExpired(idToken: string): boolean {
+    const expiresAt = localStorage.getItem('expires_at');
+    if (expiresAt && expiresAt !== 'Invalid Date' && new Date(expiresAt).getTime() < Date.now()) {
+      return true;
+    }
+
+    const idTokenParts = idToken.split('.');
+    if (idTokenParts.length !== 3) {
+      return true;
+    }
+
+    try {
+      const payload = JSON.parse(atob(idTokenParts[1]));
+      return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now();
+    } catch (_error) {
+      return true;
+    }
+  }
+
+  private expireLocalSession(): void {
+    this.clearStorage();
+    this.userSubject.next({});
+    this.logoutSubject.next('logout-auto-only-localstorage');
   }
 
   public clearStorage(): void {
