@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, fromEvent } from 'rxjs';
+import { BehaviorSubject, filter, fromEvent, take } from 'rxjs';
 import { ConfiguracionService } from './configuracion.service';
 import { ImplicitAutenticationService } from './implicit_autentication.service';
 import { Router } from '@angular/router';
@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 })
 export class MenuService {
   public sidebar: boolean = false;
+  private appMenu = '';
 
   private optionSubject = new BehaviorSubject(false);
   public option$ = this.optionSubject.asObservable();
@@ -42,55 +43,70 @@ export class MenuService {
   }
 
   getMenu(appMenu: string) {
+    this.appMenu = appMenu;
     const menuInfo = localStorage.getItem('menu');
-    if (menuInfo) {
-      const menu = JSON.parse(atob(menuInfo));
-      this.restoreExpandedState(menu);
-      this.menuSubject.next(menu);
+    const expectedContext = this.userService.getSessionCacheKey(appMenu);
+    const menuContext = localStorage.getItem('menu_context');
+    if (menuInfo && menuContext === expectedContext) {
+      try {
+        const menu = JSON.parse(atob(menuInfo));
+        this.restoreExpandedState(menu);
+        this.menuSubject.next(menu);
+        return;
+      } catch {
+        localStorage.removeItem('menu');
+        localStorage.removeItem('menu_context');
+      }
     } else {
-      this.userService.user$.subscribe((userResponse: any) => {
-        const { user, userService } = userResponse;
-        if (user && userService) {
-          const role1 = user
-            ? user.role
-              ? user.role.filter(
-                  (menu: string | string[]) => menu.indexOf('/') === -1
-                )
-              : []
-            : [];
-          const role2 = userService
-            ? userService.role
-              ? userService.role.filter(
-                  (menu: string | string[]) => menu.indexOf('/') === -1
-                )
-              : []
-            : [];
-          const roles =
-            [...role1, ...role2].length > 0
-              ? [...role1, ...role2].join(',')
-              : '';
-          if (roles !== '') {
-            this.configuracionService
-              .getMenu(roles, appMenu, 'menu_opcion_padre/ArbolMenus')
-              .subscribe((data: any) => {
-                let navItems = data;
-                navItems = [
-                  ...[
-                    {
-                      Nombre: 'Inicio',
-                      Icono: 'home',
-                      Url: 'pages',
-                      Opciones: [],
-                    },
-                  ],
-                  ...navItems,
-                ];
-                this.updateMenu(navItems);
-              });
-          }
-        }
-      });
+      localStorage.removeItem('menu');
+      localStorage.removeItem('menu_context');
     }
+
+    this.userService.user$.pipe(
+      filter((userResponse: any) => Boolean(userResponse?.user && userResponse?.userService)),
+      take(1)
+    ).subscribe((userResponse: any) => {
+      const { user, userService } = userResponse;
+      if (user && userService) {
+        const role1 = user
+          ? user.role
+            ? user.role.filter(
+                (menu: string | string[]) => menu.indexOf('/') === -1
+              )
+            : []
+          : [];
+        const role2 = userService
+          ? userService.role
+            ? userService.role.filter(
+                (menu: string | string[]) => menu.indexOf('/') === -1
+              )
+            : []
+          : [];
+        const roles =
+          [...role1, ...role2].length > 0
+            ? [...role1, ...role2].join(',')
+            : '';
+        if (roles !== '') {
+          this.configuracionService
+            .getMenu(roles, appMenu, 'menu_opcion_padre/ArbolMenus')
+            .subscribe((data: any) => {
+              let navItems = data;
+              navItems = [
+                ...[
+                  {
+                    Nombre: 'Inicio',
+                    Icono: 'home',
+                    Url: 'pages',
+                    Opciones: [],
+                  },
+                ],
+                ...navItems,
+              ];
+              this.updateMenu(navItems, appMenu);
+            });
+        }
+      }
+    });
   }
 
   public updateOption(option: any) {
@@ -102,8 +118,9 @@ export class MenuService {
     this.sidebarSubject.next(this.sidebar);
   }
 
-  public updateMenu(menu: any) {
+  public updateMenu(menu: any, appMenu = this.appMenu) {
     localStorage.setItem('menu', btoa(JSON.stringify(menu)));
+    localStorage.setItem('menu_context', this.userService.getSessionCacheKey(appMenu));
     this.menuSubject.next(menu);
   }
 
