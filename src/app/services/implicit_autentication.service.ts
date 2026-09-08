@@ -1,167 +1,169 @@
-import { Injectable } from '@angular/core';
-import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { Md5 } from 'ts-md5';
-import { BehaviorSubject, Subscription, of, firstValueFrom } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, filter, firstValueFrom, map } from 'rxjs';
 import Swal from 'sweetalert2';
-import { delay } from 'rxjs/operators';
+
+interface AuthTransaction {
+  state: string;
+  nonce: string;
+  returnUrl: string;
+}
 
 @Injectable({ providedIn: 'root' })
-export class ImplicitAutenticationService {
-  environment: any;
-  logoutUrl: any;
-  params: any;
-  payload: any;
-  timeActiveAlert: number = 4000;
-  private user: any;
-  private timeLogoutBefore = 1000;
-  private timeAlert = 300000;
+export class ImplicitAutenticationService implements OnDestroy {
+  private static readonly AUTH_TRANSACTION_KEY = 'core_auth_transaction';
+  private static readonly LOGOUT_STATE_KEY = 'core_logout_state';
+  private static readonly AUTH_EVENT_KEY = 'core_auth_event';
+  private static readonly LAST_ACTIVITY_KEY = 'core_last_activity';
+  private static readonly STORAGE_KEYS = [
+    'access_token',
+    'apps_menu',
+    'apps_menu_context',
+    'expires_at',
+    'expires_in',
+    'id_token',
+    'menu',
+    'menu_context',
+    'notificacion',
+    'persona_id',
+    'select',
+    'state',
+    'user',
+    'usuario',
+    ImplicitAutenticationService.LAST_ACTIVITY_KEY,
+  ];
+  private static readonly ACTIVITY_EVENTS: Array<keyof WindowEventMap> = [
+    'click',
+    'keydown',
+    'mousemove',
+    'scroll',
+    'touchstart',
+  ];
 
-  private userSubject = new BehaviorSubject({});
-  public user$ = this.userSubject.asObservable();
+  private readonly idleTimeoutMs = 60 * 60 * 1000;
+  private readonly warningBeforeMs = 5 * 60 * 1000;
+  private readonly activityThrottleMs = 30 * 1000;
+  private environment: any;
+  private expirationTimer?: ReturnType<typeof setTimeout>;
+  private expirationWarningTimer?: ReturnType<typeof setTimeout>;
+  private idleTimer?: ReturnType<typeof setTimeout>;
+  private idleWarningTimer?: ReturnType<typeof setTimeout>;
+  private lastRecordedActivity = 0;
+  private logoutInProgress = false;
+  private tokenWarningShown = false;
+  private idleWarningShown = false;
+  private logoutChannel?: BroadcastChannel;
 
-  private menuSubject = new BehaviorSubject({});
-  public menu$ = this.menuSubject.asObservable();
+  private readonly userSubject = new BehaviorSubject<any>({});
+  readonly user$ = this.userSubject.asObservable();
 
-  private logoutSubject = new BehaviorSubject('');
-  public logout$ = this.logoutSubject.asObservable();
+  private readonly menuSubject = new BehaviorSubject<any>({});
+  readonly menu$ = this.menuSubject.asObservable();
 
-  private eventoCerrarSesionRegistrado = false;
+  private readonly logoutSubject = new BehaviorSubject('');
+  readonly logout$ = this.logoutSubject.asObservable();
 
   constructor(private httpClient: HttpClient) {
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        const expires = this.setExpiresAt();
-        this.autologout(expires);
-      }
-    });
-    this.añadirEventoParaCerrarSesion();
-  }
+    window.addEventListener('cerrar-sesion-mf', this.handleCloseSession);
+    window.addEventListener('storage', this.handleStorageEvent);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    ImplicitAutenticationService.ACTIVITY_EVENTS.forEach((eventName) =>
+      window.addEventListener(eventName, this.handleActivity, { passive: true })
+    );
 
-  ngOnDestroy() {
-    this.removerEventoParaCerrarSesion();
-  }
-
-  private añadirEventoParaCerrarSesion() {
-    if (!this.eventoCerrarSesionRegistrado) {
-      window.addEventListener('cerrar-sesion-mf', this.handleCerrarSesion);
-      this.eventoCerrarSesionRegistrado = true;
+    if (typeof BroadcastChannel !== 'undefined') {
+      this.logoutChannel = new BroadcastChannel('core-auth');
+      this.logoutChannel.addEventListener('message', this.handleBroadcastMessage);
     }
   }
 
-  private removerEventoParaCerrarSesion() {
-    if (this.eventoCerrarSesionRegistrado) {
-      window.removeEventListener('cerrar-sesion-mf', this.handleCerrarSesion);
-      this.eventoCerrarSesionRegistrado = false;
-    }
+  ngOnDestroy(): void {
+    this.clearTimers();
+    window.removeEventListener('cerrar-sesion-mf', this.handleCloseSession);
+    window.removeEventListener('storage', this.handleStorageEvent);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    ImplicitAutenticationService.ACTIVITY_EVENTS.forEach((eventName) =>
+      window.removeEventListener(eventName, this.handleActivity)
+    );
+    this.logoutChannel?.removeEventListener('message', this.handleBroadcastMessage);
+    this.logoutChannel?.close();
   }
 
-  private handleCerrarSesion = (_event: Event) => {
-    this.logout('action-event');
-  };
+  async init(environment: any): Promise<void> {
+    this.environment = environment;
+    this.handleLogoutResponse();
+    let returnUrl: string | undefined;
 
-  async init(entorno: any): Promise<void> {
-    this.environment = entorno;
-    const id_token = window.localStorage.getItem('id_token');
-
-    if (id_token && this.isSessionExpired(id_token)) {
-      this.expireLocalSession();
-      this.clearUrl();
-      return;
+    const callbackParams = new URLSearchParams(window.location.hash.slice(1));
+    if (callbackParams.has('error')) {
+      const description = callbackParams.get('error_description') || callbackParams.get('error');
+      this.rejectCallback();
+      throw new Error(`WSO2 rechazo la autenticacion: ${description}`);
     }
 
-    if (!id_token) {
-      const params: { [k: string]: any } = {};
-      const regex = /([^&=]+)=([^&]*)/g;
-      const queryString = location.hash.substring(1);
-      let m;
-      while ((m = regex.exec(queryString))) {
-        params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-      }
-
-      if (params['id_token']) {
-        const id_token_array = params['id_token'].split('.');
-        const payload = JSON.parse(atob(id_token_array[1]));
-        localStorage.setItem('access_token', params['access_token']);
-        localStorage.setItem('expires_in', params['expires_in']);
-        localStorage.setItem('state', params['state']);
-        localStorage.setItem('id_token', params['id_token']);
-
-        await this.updateAuth(payload);
-      }
+    if (callbackParams.has('id_token')) {
+      returnUrl = await this.processCallback(callbackParams);
     } else {
-      const id_token_parts = id_token.split('.');
-      if (id_token_parts?.length === 3) {
-        const payload = JSON.parse(atob(id_token_parts[1]));
+      const idToken = localStorage.getItem('id_token');
+      if (idToken) {
+        const payload = this.decodeJwtPayload(idToken);
+        if (!this.isValidStoredToken(payload) || this.isSessionExpired(idToken)) {
+          this.logout('logout-auto');
+          return;
+        }
         await this.updateAuth(payload);
       }
     }
 
-    const expires = this.setExpiresAt();
-    this.autologout(expires);
-    this.clearUrl();
+    if (localStorage.getItem('id_token')) {
+      this.initializeActivity();
+      this.scheduleSessionTimers();
+      this.scheduleIdleTimers();
+    }
+    this.clearUrl(returnUrl);
   }
 
   async updateAuth(payload: any): Promise<void> {
-    const user = localStorage.getItem('user');
-    if (user) {
-      this.userSubject.next(JSON.parse(atob(user)));
+    const cachedUser = this.readStoredUser();
+    if (cachedUser && this.isUserCacheCurrent(cachedUser, payload)) {
+      this.userSubject.next(cachedUser);
       return;
     }
 
     try {
-      const res = await firstValueFrom(
+      const response = await firstValueFrom(
         this.httpClient.post<any>(
           this.environment.AUTENTICACION_MID,
           { user: payload.email },
           this.getHttpOptions()
         )
       );
+      const roles = Array.isArray(response?.role) ? response.role : [];
+      const userService = {
+        ...response,
+        role: Array.from(new Set([...roles, 'ASPIRANTE'])),
+      };
+      const authenticatedUser = {
+        user: payload,
+        userService,
+        authContext: {
+          clientId: this.environment.CLIENTE_ID,
+          subject: payload.sub || payload.email,
+        },
+      };
 
-      this.clearUrl();
-
-      const userPayload = { user: payload };
-      const userServiceResponse = { userService: res };
-      // if (!res.role || res.role.length === 0) {
-      //   res.role = ['ASPIRANTE'];
-      // } else {
-      //   const allowedRoles = ['Internal/everyone', 'Internal/selfsignup'];
-      //   const hasDisallowedRoles = res.role.some((role: any) => !allowedRoles.includes(role));
-
-      //   if (!hasDisallowedRoles && !res.role.includes('ASPIRANTE')) {
-      //     res.role.push('ASPIRANTE');
-      //   }
-      // }
-      res.role.push('ASPIRANTE');
-
-      localStorage.setItem(
-        'user',
-        btoa(JSON.stringify({ ...userPayload, ...userServiceResponse }))
-      );
-
-      this.userSubject.next({ ...userPayload, ...userServiceResponse });
+      localStorage.setItem('user', btoa(JSON.stringify(authenticatedUser)));
+      this.userSubject.next(authenticatedUser);
     } catch (error) {
-      console.error('Error en updateAuth:', error);
+      this.expireLocalSession('logout-auth-error', true);
       throw error;
     }
   }
 
-  private getHttpOptions(): { headers: HttpHeaders; observe: 'body' } {
-    return {
-      headers: new HttpHeaders({
-        Accept: 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      }),
-      observe: 'body' as const
-    };
-  }
-
-  public login(flag: any): boolean {
-    if (
-      localStorage.getItem('id_token') === 'undefined' ||
-      localStorage.getItem('id_token') === null ||
-      this.logoutValid()
-    ) {
-      if (!flag) {
+  login(suppressRedirect: boolean): boolean {
+    const idToken = localStorage.getItem('id_token');
+    if (!idToken || this.isSessionExpired(idToken)) {
+      if (!suppressRedirect) {
         this.getAuthorizationUrl();
       }
       return false;
@@ -169,158 +171,412 @@ export class ImplicitAutenticationService {
     return true;
   }
 
-  public logout(action: any): void {
-    const state = localStorage.getItem('state');
+  logout(action: string): void {
+    if (this.logoutInProgress) return;
+    this.logoutInProgress = true;
+
     const idToken = localStorage.getItem('id_token');
-    if (state && idToken) {
-      this.logoutUrl = `${this.environment.SIGN_OUT_URL}?id_token_hint=${idToken}`;
-      this.logoutUrl += `&post_logout_redirect_uri=${this.environment.SIGN_OUT_REDIRECT_URL}`;
-      this.logoutUrl += `&state=${state}`;
-      this.clearStorage();
-      this.logoutSubject.next(action);
-      window.location.replace(this.logoutUrl);
-    }
-  }
+    const logoutState = this.generateState();
+    sessionStorage.removeItem(ImplicitAutenticationService.AUTH_TRANSACTION_KEY);
+    sessionStorage.setItem(ImplicitAutenticationService.LOGOUT_STATE_KEY, logoutState);
 
-  public getPayload(): any {
-    const idToken = localStorage.getItem('id_token')?.split('.');
-    return idToken?.length === 3 ? JSON.parse(atob(idToken[1])) : {};
-  }
+    this.expireLocalSession(action, true);
 
-  public logoutValid(): boolean {
-    const queryString = location.search.substring(1);
-    const regex = /([^&=]+)=([^&]*)/g;
-    let m, state;
-    while ((m = regex.exec(queryString))) {
-      state = decodeURIComponent(m[2]);
-    }
-    if (localStorage.getItem('state') === state) {
-      this.clearStorage();
-      return true;
-    }
-    return false;
-  }
-
-  public clearUrl(): void {
-    const clean_uri = window.location.origin + window.location.pathname;
-    window.history.replaceState({}, document.title, clean_uri);
-  }
-
-  public getAuthorizationUrl(): string {
-    this.params = this.environment;
-    if (!this.params.hasOwnProperty('nonce')) {
-      const nonceData = this.generateState();
-      this.params = { ...this.params, nonce: nonceData };
-    }
-    if (!this.params.state) {
-      this.params.state = this.generateState();
-    }
-
-    let url = `${this.params.AUTORIZATION_URL}?client_id=${encodeURIComponent(this.params.CLIENTE_ID)}`;
-    url += `&redirect_uri=${encodeURIComponent(this.params.REDIRECT_URL)}`;
-    url += `&response_type=${encodeURIComponent(this.params.RESPONSE_TYPE)}`;
-    url += `&scope=${encodeURIComponent(this.params.SCOPE)}`;
-    url += `&state_url=${encodeURIComponent(window.location.hash)}`;
-    url += `&nonce=${encodeURIComponent(this.params.nonce)}`;
-    url += `&state=${encodeURIComponent(this.params.state)}`;
-
-    window.location.replace(url);
-    return url;
-  }
-
-  public generateState(): string {
-    const text = ((Date.now() + Math.random()) * Math.random()).toString().replace('.', '');
-    return Md5.hashStr(text);
-  }
-
-  public setExpiresAt(): Date | false {
-    const expiresAt = localStorage.getItem('expires_at');
-    if (!expiresAt || expiresAt === 'Invalid Date') {
-      const expiresAtDate = new Date();
-      const expires_in = localStorage.getItem('expires_in');
-      expiresAtDate.setSeconds(expiresAtDate.getSeconds() + parseInt(expires_in ?? '0', 10));
-      localStorage.setItem('expires_at', expiresAtDate.toUTCString());
-      return expiresAtDate;
-    }
-    return new Date(expiresAt);
-  }
-
-  public autologout(expires: Date | false): void {
-    if (!expires) return;
-
-    const expiresIn = expires.getTime() - Date.now();
-    if (expiresIn < this.timeLogoutBefore) {
-      this.expireLocalSession();
+    if (idToken && this.environment?.SIGN_OUT_URL) {
+      const url = new URL(this.environment.SIGN_OUT_URL);
+      url.searchParams.set('id_token_hint', idToken);
+      url.searchParams.set('post_logout_redirect_uri', this.environment.SIGN_OUT_REDIRECT_URL);
+      url.searchParams.set('state', logoutState);
+      window.location.replace(url.toString());
       return;
     }
 
-    const timerDelay = Math.max(expiresIn - this.timeLogoutBefore, this.timeLogoutBefore);
+    this.logoutInProgress = false;
+  }
 
-    if (!isNaN(expiresIn)) {
-      of(null).pipe(delay(timerDelay - this.timeLogoutBefore)).subscribe(() => this.logout('logout-auto'));
-
-      if (this.timeAlert < timerDelay) {
-        of(null).pipe(delay(timerDelay - this.timeAlert)).subscribe(() => {
-          Swal.fire({
-            position: 'top-end',
-            icon: 'info',
-            title: `Su sesión se cerrará en ${this.timeAlert / 60000} minutos`,
-            showConfirmButton: false,
-            timer: this.timeActiveAlert,
-          });
-        });
-      }
+  handleUnauthorized(): void {
+    if (localStorage.getItem('id_token')) {
+      this.logout('logout-unauthorized');
     }
   }
 
-  public getDocument(): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      let subscription: Subscription | null = null;
-
-      subscription = this.user$.subscribe({
-        next: (data: any) => {
-          resolve(data?.userService?.documento ?? null);
-          subscription?.unsubscribe();
-        },
-        error: (error) => {
-          reject(error);
-          subscription?.unsubscribe();
-        }
-      });
-    });
+  getAccessToken(): string | null {
+    return localStorage.getItem('access_token');
   }
 
-  public expired(): boolean {
-    const expires_at = localStorage.getItem('expires_at');
-    return new Date(expires_at ?? new Date().toString()) < new Date();
+  shouldAttachToken(requestUrl: string): boolean {
+    if (!this.environment?.AUTENTICACION_MID) return false;
+    try {
+      const requestOrigin = new URL(requestUrl, window.location.origin).origin;
+      const apiOrigin = new URL(this.environment.AUTENTICACION_MID).origin;
+      return requestOrigin === apiOrigin;
+    } catch {
+      return false;
+    }
+  }
+
+  getPayload(): any {
+    const idToken = localStorage.getItem('id_token');
+    if (!idToken) return {};
+    try {
+      return this.decodeJwtPayload(idToken);
+    } catch {
+      return {};
+    }
+  }
+
+  getSessionCacheKey(scope = ''): string {
+    const payload = this.getPayload();
+    const storedUser = this.readStoredUser();
+    const roles = Array.isArray(storedUser?.userService?.role)
+      ? [...storedUser.userService.role].sort().join(',')
+      : '';
+    return [payload.sub || payload.email || '', this.environment?.CLIENTE_ID || '', scope, roles].join('|');
+  }
+
+  logoutValid(): boolean {
+    const returnedState = new URLSearchParams(window.location.search).get('state');
+    const expectedState = sessionStorage.getItem(ImplicitAutenticationService.LOGOUT_STATE_KEY);
+    if (!returnedState || !expectedState || returnedState !== expectedState) return false;
+    sessionStorage.removeItem(ImplicitAutenticationService.LOGOUT_STATE_KEY);
+    return true;
+  }
+
+  clearUrl(returnUrl?: string): void {
+    const safeReturnUrl = returnUrl && returnUrl.startsWith('/') ? returnUrl : window.location.pathname;
+    window.history.replaceState({}, document.title, safeReturnUrl);
+  }
+
+  getAuthorizationUrl(): string {
+    const state = this.generateState();
+    const nonce = this.generateState();
+    const transaction: AuthTransaction = {
+      state,
+      nonce,
+      returnUrl: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    };
+    sessionStorage.setItem(
+      ImplicitAutenticationService.AUTH_TRANSACTION_KEY,
+      JSON.stringify(transaction)
+    );
+
+    const url = new URL(this.environment.AUTORIZATION_URL);
+    url.searchParams.set('client_id', this.environment.CLIENTE_ID);
+    url.searchParams.set('redirect_uri', this.environment.REDIRECT_URL);
+    url.searchParams.set('response_type', this.environment.RESPONSE_TYPE);
+    url.searchParams.set('scope', this.environment.SCOPE);
+    url.searchParams.set('state_url', window.location.hash);
+    url.searchParams.set('nonce', nonce);
+    url.searchParams.set('state', state);
+
+    window.location.replace(url.toString());
+    return url.toString();
+  }
+
+  generateState(): string {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  setExpiresAt(): Date | false {
+    const candidates: number[] = [];
+    const storedExpiration = Date.parse(localStorage.getItem('expires_at') || '');
+    if (Number.isFinite(storedExpiration)) candidates.push(storedExpiration);
+
+    const payload = this.getPayload();
+    if (typeof payload.exp === 'number') candidates.push(payload.exp * 1000);
+    return candidates.length > 0 ? new Date(Math.min(...candidates)) : false;
+  }
+
+  autologout(_expires?: Date | false): void {
+    this.scheduleSessionTimers();
+  }
+
+  getDocument(): Promise<string | null> {
+    return firstValueFrom(
+      this.user$.pipe(
+        filter((data: any) => Boolean(data?.userService)),
+        map((data: any) => data.userService.documento ?? null)
+      )
+    );
+  }
+
+  expired(): boolean {
+    const expiresAt = this.setExpiresAt();
+    return !expiresAt || expiresAt.getTime() <= Date.now();
+  }
+
+  clearStorage(): void {
+    ImplicitAutenticationService.STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+  }
+
+  private async processCallback(params: URLSearchParams): Promise<string> {
+    const transaction = this.readAuthTransaction();
+    const returnedState = params.get('state');
+    const idToken = params.get('id_token');
+    const accessToken = params.get('access_token');
+
+    if (!transaction || !returnedState || returnedState !== transaction.state) {
+      this.rejectCallback();
+      throw new Error('El state retornado por WSO2 no coincide con la autenticacion iniciada');
+    }
+    if (!idToken || !accessToken) {
+      this.rejectCallback();
+      throw new Error('WSO2 no retorno los tokens requeridos');
+    }
+
+    const payload = this.decodeJwtPayload(idToken);
+    if (!this.isValidCallbackToken(payload, transaction.nonce)) {
+      this.rejectCallback();
+      throw new Error('El ID token retornado por WSO2 no supera las validaciones OIDC');
+    }
+
+    this.clearStorage();
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('id_token', idToken);
+    localStorage.setItem('state', returnedState);
+
+    const expiresIn = Number(params.get('expires_in'));
+    const tokenExpiration = payload.exp * 1000;
+    const accessExpiration = Number.isFinite(expiresIn) && expiresIn > 0
+      ? Date.now() + expiresIn * 1000
+      : tokenExpiration;
+    localStorage.setItem(
+      'expires_in',
+      String(Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : Math.floor((tokenExpiration - Date.now()) / 1000))
+    );
+    localStorage.setItem('expires_at', new Date(Math.min(accessExpiration, tokenExpiration)).toISOString());
+    sessionStorage.removeItem(ImplicitAutenticationService.AUTH_TRANSACTION_KEY);
+
+    await this.updateAuth(payload);
+    return transaction.returnUrl;
+  }
+
+  private isValidCallbackToken(payload: any, expectedNonce: string): boolean {
+    const audience = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+    const issuerIsValid = !this.environment.ISSUER || payload.iss === this.environment.ISSUER;
+    return Boolean(
+      payload &&
+      typeof payload.exp === 'number' &&
+      payload.exp * 1000 > Date.now() &&
+      audience.includes(this.environment.CLIENTE_ID) &&
+      payload.nonce === expectedNonce &&
+      issuerIsValid
+    );
+  }
+
+  private isValidStoredToken(payload: any): boolean {
+    const audience = Array.isArray(payload?.aud) ? payload.aud : [payload?.aud];
+    return Boolean(
+      payload &&
+      typeof payload.exp === 'number' &&
+      audience.includes(this.environment.CLIENTE_ID) &&
+      (!this.environment.ISSUER || payload.iss === this.environment.ISSUER)
+    );
   }
 
   private isSessionExpired(idToken: string): boolean {
-    const expiresAt = localStorage.getItem('expires_at');
-    if (expiresAt && expiresAt !== 'Invalid Date' && new Date(expiresAt).getTime() < Date.now()) {
-      return true;
-    }
-
-    const idTokenParts = idToken.split('.');
-    if (idTokenParts.length !== 3) {
-      return true;
-    }
-
     try {
-      const payload = JSON.parse(atob(idTokenParts[1]));
-      return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now();
-    } catch (_error) {
+      const payload = this.decodeJwtPayload(idToken);
+      const expiresAt = this.setExpiresAt();
+      return typeof payload.exp !== 'number' || !expiresAt || expiresAt.getTime() <= Date.now();
+    } catch {
       return true;
     }
   }
 
-  private expireLocalSession(): void {
+  private decodeJwtPayload(token: string): any {
+    const parts = token.split('.');
+    if (parts.length !== 3) throw new Error('JWT invalido');
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const bytes = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  private readAuthTransaction(): AuthTransaction | null {
+    try {
+      const value = sessionStorage.getItem(ImplicitAutenticationService.AUTH_TRANSACTION_KEY);
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private readStoredUser(): any | null {
+    try {
+      const value = localStorage.getItem('user');
+      return value ? JSON.parse(atob(value)) : null;
+    } catch {
+      localStorage.removeItem('user');
+      return null;
+    }
+  }
+
+  private isUserCacheCurrent(cachedUser: any, payload: any): boolean {
+    return cachedUser?.authContext?.clientId === this.environment.CLIENTE_ID &&
+      cachedUser?.authContext?.subject === (payload.sub || payload.email) &&
+      cachedUser?.userService &&
+      cachedUser?.user;
+  }
+
+  private getHttpOptions(): { headers: HttpHeaders; observe: 'body' } {
+    return {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization: `Bearer ${this.getAccessToken()}`,
+      }),
+      observe: 'body',
+    };
+  }
+
+  private initializeActivity(): void {
+    const storedActivity = Number(localStorage.getItem(ImplicitAutenticationService.LAST_ACTIVITY_KEY));
+    const lastActivity = Number.isFinite(storedActivity) && storedActivity > 0 ? storedActivity : Date.now();
+    this.recordActivity(lastActivity);
+  }
+
+  private scheduleSessionTimers(): void {
+    this.clearSessionTimers();
+    const expiresAt = this.setExpiresAt();
+    if (!expiresAt) return;
+
+    const remaining = expiresAt.getTime() - Date.now();
+    if (remaining <= 0) {
+      this.logout('logout-auto');
+      return;
+    }
+
+    this.expirationTimer = setTimeout(() => this.logout('logout-auto'), remaining);
+    if (remaining > this.warningBeforeMs && !this.tokenWarningShown) {
+      this.expirationWarningTimer = setTimeout(() => {
+        this.tokenWarningShown = true;
+        this.showWarning('Su sesion se cerrara en 5 minutos porque el token esta por vencer');
+      }, remaining - this.warningBeforeMs);
+    }
+  }
+
+  private scheduleIdleTimers(): void {
+    this.clearIdleTimers();
+    const lastActivity = Number(localStorage.getItem(ImplicitAutenticationService.LAST_ACTIVITY_KEY));
+    if (!Number.isFinite(lastActivity) || lastActivity <= 0) return;
+
+    const remaining = lastActivity + this.idleTimeoutMs - Date.now();
+    if (remaining <= 0) {
+      this.logout('logout-inactivity');
+      return;
+    }
+
+    this.idleTimer = setTimeout(() => this.logout('logout-inactivity'), remaining);
+    if (remaining > this.warningBeforeMs && !this.idleWarningShown) {
+      this.idleWarningTimer = setTimeout(() => {
+        this.idleWarningShown = true;
+        this.showWarning('Su sesion se cerrara en 5 minutos por inactividad');
+      }, remaining - this.warningBeforeMs);
+    }
+  }
+
+  private showWarning(message: string): void {
+    void Swal.fire({
+      position: 'top-end',
+      icon: 'info',
+      title: message,
+      showConfirmButton: false,
+      timer: 4000,
+    });
+  }
+
+  private recordActivity(timestamp: number): void {
+    this.lastRecordedActivity = timestamp;
+    localStorage.setItem(ImplicitAutenticationService.LAST_ACTIVITY_KEY, String(timestamp));
+    this.idleWarningShown = false;
+    this.scheduleIdleTimers();
+  }
+
+  private expireLocalSession(action: string, broadcast = false): void {
+    this.clearTimers();
     this.clearStorage();
     this.userSubject.next({});
-    this.logoutSubject.next('logout-auto-only-localstorage');
+    this.logoutSubject.next(action);
+    if (broadcast) this.broadcastLogout();
   }
 
-  public clearStorage(): void {
-    localStorage.clear();
+  private rejectCallback(): void {
+    sessionStorage.removeItem(ImplicitAutenticationService.AUTH_TRANSACTION_KEY);
+    this.expireLocalSession('logout-invalid-callback', true);
+    this.clearUrl();
   }
+
+  private handleLogoutResponse(): void {
+    if (this.logoutValid()) {
+      this.expireLocalSession('logout-complete');
+      this.clearUrl();
+    }
+  }
+
+  private broadcastLogout(): void {
+    this.logoutChannel?.postMessage({ type: 'logout' });
+    localStorage.setItem(
+      ImplicitAutenticationService.AUTH_EVENT_KEY,
+      JSON.stringify({ type: 'logout', timestamp: Date.now() })
+    );
+    localStorage.removeItem(ImplicitAutenticationService.AUTH_EVENT_KEY);
+  }
+
+  private clearSessionTimers(): void {
+    if (this.expirationTimer) clearTimeout(this.expirationTimer);
+    if (this.expirationWarningTimer) clearTimeout(this.expirationWarningTimer);
+    this.expirationTimer = undefined;
+    this.expirationWarningTimer = undefined;
+  }
+
+  private clearIdleTimers(): void {
+    if (this.idleTimer) clearTimeout(this.idleTimer);
+    if (this.idleWarningTimer) clearTimeout(this.idleWarningTimer);
+    this.idleTimer = undefined;
+    this.idleWarningTimer = undefined;
+  }
+
+  private clearTimers(): void {
+    this.clearSessionTimers();
+    this.clearIdleTimers();
+  }
+
+  private readonly handleCloseSession = (): void => this.logout('action-event');
+
+  private readonly handleVisibilityChange = (): void => {
+    if (document.visibilityState !== 'visible' || !localStorage.getItem('id_token')) return;
+    if (this.expired()) {
+      this.logout('logout-auto');
+      return;
+    }
+    this.scheduleSessionTimers();
+    this.scheduleIdleTimers();
+  };
+
+  private readonly handleActivity = (): void => {
+    if (!localStorage.getItem('id_token')) return;
+    const now = Date.now();
+    if (now - this.lastRecordedActivity >= this.activityThrottleMs) {
+      this.recordActivity(now);
+    }
+  };
+
+  private readonly handleStorageEvent = (event: StorageEvent): void => {
+    if (event.key === ImplicitAutenticationService.LAST_ACTIVITY_KEY && event.newValue) {
+      this.lastRecordedActivity = Number(event.newValue);
+      this.idleWarningShown = false;
+      this.scheduleIdleTimers();
+    }
+    if (event.key === ImplicitAutenticationService.AUTH_EVENT_KEY && event.newValue) {
+      this.expireLocalSession('logout-other-tab');
+    }
+  };
+
+  private readonly handleBroadcastMessage = (event: MessageEvent): void => {
+    if (event.data?.type === 'logout') {
+      this.expireLocalSession('logout-other-tab');
+    }
+  };
 }

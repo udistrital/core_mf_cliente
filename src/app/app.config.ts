@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { APP_BASE_HREF } from '@angular/common';
-import { HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { getSingleSpaExtraProviders } from 'single-spa-angular';
 import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -14,6 +14,7 @@ import { ConfiguracionService } from './services/configuracion.service';
 import { lang } from './services/globals';
 import { MatDialog, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { Overlay } from '@angular/cdk/overlay';
+import { authInterceptor } from './services/auth.interceptor';
 
 
 
@@ -30,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     BrowserAnimationsModule,
     provideAnimations(),
     getSingleSpaExtraProviders(),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     // Configuración de MatDialog
     MatDialog,
     Overlay,
