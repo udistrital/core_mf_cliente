@@ -14,7 +14,7 @@ export class PopUpManager {
 
   showToast(message: string, duration: number = 3000) {
     this.translate.get(message).subscribe((translatedMessage: string) => {
-      this.snackBar.open(translatedMessage, 'Cerrar', {
+      this.snackBar.open(translatedMessage, this.translate.instant('toast.close'), {
         duration: duration,
         horizontalPosition: 'center',
         verticalPosition: 'bottom',
@@ -25,7 +25,7 @@ export class PopUpManager {
 
   showErrorToast(message: string) {
     this.translate.get(message).subscribe((translatedMessage: string) => {
-      this.snackBar.open(translatedMessage, 'Cerrar', {
+      this.snackBar.open(translatedMessage, this.translate.instant('toast.close'), {
         duration: 5000, // Ejemplo de duración
         panelClass: ['error-snackbar'], // Clase CSS personalizada para el toast de error
       });
@@ -34,7 +34,7 @@ export class PopUpManager {
 
   showInfoToast(message: string, duration: number = 0) {
     this.translate.get(message).subscribe((translatedMessage: string) => {
-      this.snackBar.open(translatedMessage, 'Cerrar', {
+      this.snackBar.open(translatedMessage, this.translate.instant('toast.close'), {
         duration: duration,
         panelClass: ['info-snackbar'], // Clase CSS personalizada para el toast de información
       });
