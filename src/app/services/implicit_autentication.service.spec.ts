@@ -1,6 +1,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { TranslateService } from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { ImplicitAutenticationService } from './implicit_autentication.service';
 
 describe('ImplicitAutenticationService', () => {
@@ -20,7 +22,14 @@ describe('ImplicitAutenticationService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: TranslateService,
+          useValue: { get: (key: string) => of(key) },
+        },
+      ],
     });
     service = TestBed.inject(ImplicitAutenticationService);
     httpTesting = TestBed.inject(HttpTestingController);
@@ -126,6 +135,32 @@ describe('ImplicitAutenticationService', () => {
     await expectAsync(callback).toBeRejectedWithError(/state retornado/);
     expect(localStorage.getItem('access_token')).toBeNull();
     httpTesting.expectNone(environment.AUTENTICACION_MID);
+  });
+
+  it('clears a token from another environment without calling WSO2 logout', async () => {
+    localStorage.setItem('id_token', createIdToken({
+      aud: 'another-client',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    }));
+
+    await service.init(environment);
+
+    expect(localStorage.getItem('id_token')).toBeNull();
+    expect(sessionStorage.getItem('core_logout_state')).toBeNull();
+    httpTesting.expectNone(environment.AUTENTICACION_MID);
+  });
+
+  it('does not create logout state when there is no ID token', () => {
+    sessionStorage.setItem('core_auth_transaction', 'stale-transaction');
+    sessionStorage.setItem('core_logout_state', 'stale-logout-state');
+    const generateState = spyOn(service, 'generateState').and.callThrough();
+
+    service.logout('action-event');
+
+    expect(generateState).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('core_auth_transaction')).toBeNull();
+    expect(sessionStorage.getItem('core_logout_state')).toBeNull();
+    expect((service as any).logoutInProgress).toBeFalse();
   });
 
   function createIdToken(payload: Record<string, unknown>): string {

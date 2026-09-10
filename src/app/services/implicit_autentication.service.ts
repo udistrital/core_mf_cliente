@@ -1,7 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, filter, firstValueFrom, map } from 'rxjs';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
+import { BehaviorSubject, filter, firstValueFrom, map, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
+import { TranslateService } from '@ngx-translate/core';
 
 interface AuthTransaction {
   state: string;
@@ -40,8 +41,9 @@ export class ImplicitAutenticationService implements OnDestroy {
     'touchstart',
   ];
 
-  private readonly idleTimeoutMs = 60 * 60 * 1000;
-  private readonly warningBeforeMs = 5 * 60 * 1000;
+  private readonly idleTimeoutMs = 15 * 60 * 1000 + 30 * 1000;
+  private readonly tokenWarningBeforeMs = 5 * 60 * 1000;
+  private readonly idleWarningBeforeMs = 30 * 1000;
   private readonly activityThrottleMs = 30 * 1000;
   private environment: any;
   private expirationTimer?: ReturnType<typeof setTimeout>;
@@ -63,7 +65,10 @@ export class ImplicitAutenticationService implements OnDestroy {
   private readonly logoutSubject = new BehaviorSubject('');
   readonly logout$ = this.logoutSubject.asObservable();
 
-  constructor(private httpClient: HttpClient) {
+  constructor(
+    private httpClient: HttpClient,
+    private injector: Injector
+  ) {
     window.addEventListener('cerrar-sesion-mf', this.handleCloseSession);
     window.addEventListener('storage', this.handleStorageEvent);
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
@@ -106,8 +111,18 @@ export class ImplicitAutenticationService implements OnDestroy {
     } else {
       const idToken = localStorage.getItem('id_token');
       if (idToken) {
-        const payload = this.decodeJwtPayload(idToken);
-        if (!this.isValidStoredToken(payload) || this.isSessionExpired(idToken)) {
+        let payload: any;
+        try {
+          payload = this.decodeJwtPayload(idToken);
+        } catch {
+          this.expireLocalSession('logout-invalid-session', true);
+          return;
+        }
+        if (!this.isValidStoredToken(payload)) {
+          this.expireLocalSession('logout-invalid-session', true);
+          return;
+        }
+        if (this.isSessionExpired(idToken)) {
           this.logout('logout-auto');
           return;
         }
@@ -176,22 +191,24 @@ export class ImplicitAutenticationService implements OnDestroy {
     this.logoutInProgress = true;
 
     const idToken = localStorage.getItem('id_token');
-    const logoutState = this.generateState();
     sessionStorage.removeItem(ImplicitAutenticationService.AUTH_TRANSACTION_KEY);
-    sessionStorage.setItem(ImplicitAutenticationService.LOGOUT_STATE_KEY, logoutState);
 
-    this.expireLocalSession(action, true);
-
-    if (idToken && this.environment?.SIGN_OUT_URL) {
-      const url = new URL(this.environment.SIGN_OUT_URL);
-      url.searchParams.set('id_token_hint', idToken);
-      url.searchParams.set('post_logout_redirect_uri', this.environment.SIGN_OUT_REDIRECT_URL);
-      url.searchParams.set('state', logoutState);
-      window.location.replace(url.toString());
+    if (!idToken || !this.environment?.SIGN_OUT_URL) {
+      sessionStorage.removeItem(ImplicitAutenticationService.LOGOUT_STATE_KEY);
+      this.expireLocalSession(action, true);
+      this.logoutInProgress = false;
       return;
     }
 
-    this.logoutInProgress = false;
+    const logoutState = this.generateState();
+    sessionStorage.setItem(ImplicitAutenticationService.LOGOUT_STATE_KEY, logoutState);
+    this.expireLocalSession(action, true);
+
+    const url = new URL(this.environment.SIGN_OUT_URL);
+    url.searchParams.set('id_token_hint', idToken);
+    url.searchParams.set('post_logout_redirect_uri', this.environment.SIGN_OUT_REDIRECT_URL);
+    url.searchParams.set('state', logoutState);
+    window.location.replace(url.toString());
   }
 
   handleUnauthorized(): void {
@@ -449,11 +466,11 @@ export class ImplicitAutenticationService implements OnDestroy {
     }
 
     this.expirationTimer = setTimeout(() => this.logout('logout-auto'), remaining);
-    if (remaining > this.warningBeforeMs && !this.tokenWarningShown) {
+    if (remaining > this.tokenWarningBeforeMs && !this.tokenWarningShown) {
       this.expirationWarningTimer = setTimeout(() => {
         this.tokenWarningShown = true;
-        this.showWarning('Su sesion se cerrara en 5 minutos porque el token esta por vencer');
-      }, remaining - this.warningBeforeMs);
+        this.showWarning('auth.session_token_warning', this.tokenWarningBeforeMs);
+      }, remaining - this.tokenWarningBeforeMs);
     }
   }
 
@@ -469,22 +486,37 @@ export class ImplicitAutenticationService implements OnDestroy {
     }
 
     this.idleTimer = setTimeout(() => this.logout('logout-inactivity'), remaining);
-    if (remaining > this.warningBeforeMs && !this.idleWarningShown) {
+    if (remaining > this.idleWarningBeforeMs && !this.idleWarningShown) {
       this.idleWarningTimer = setTimeout(() => {
         this.idleWarningShown = true;
-        this.showWarning('Su sesion se cerrara en 5 minutos por inactividad');
-      }, remaining - this.warningBeforeMs);
+        this.showWarning('auth.session_idle_warning', this.idleWarningBeforeMs);
+      }, remaining - this.idleWarningBeforeMs);
     }
   }
 
-  private showWarning(message: string): void {
-    void Swal.fire({
-      position: 'top-end',
-      icon: 'info',
-      title: message,
-      showConfirmButton: false,
-      timer: 4000,
-    });
+  private showWarning(messageKey: string, remainingMs: number): void {
+    const translate = this.injector.get(TranslateService);
+    const usesMinutes = remainingMs % (60 * 1000) === 0;
+    const value = usesMinutes ? remainingMs / (60 * 1000) : remainingMs / 1000;
+    const unitKey = usesMinutes
+      ? value === 1 ? 'auth.time.minute' : 'auth.time.minutes'
+      : value === 1 ? 'auth.time.second' : 'auth.time.seconds';
+
+    translate
+      .get(unitKey)
+      .pipe(
+        switchMap((unit) => translate.get(messageKey, { value, unit })),
+        take(1)
+      )
+      .subscribe((title) => {
+        void Swal.fire({
+          position: 'center',
+          icon: 'info',
+          title,
+          showConfirmButton: false,
+          timer: 4000,
+        });
+      });
   }
 
   private recordActivity(timestamp: number): void {
