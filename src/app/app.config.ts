@@ -3,10 +3,9 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { APP_BASE_HREF } from '@angular/common';
-import { HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { HttpBackend, HttpClient, provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { getSingleSpaExtraProviders } from 'single-spa-angular';
 import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { environment } from '../environments/environment';
 import { OasComponent } from './oas/oas.component';
@@ -15,13 +14,42 @@ import { lang } from './services/globals';
 import { MatDialog, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { Overlay } from '@angular/cdk/overlay';
 import { authInterceptor } from './services/auth.interceptor';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 
+declare let __webpack_public_path__: string;
 
+class CoreTranslateLoader extends TranslateLoader {
+  constructor(private http: HttpClient) {
+    super();
+  }
 
-export function createTranslateLoader(http: HttpClient) {
-  // Apunta a /assets/i18n/ (raíz del servidor)
-  // Esto permite que se compartan las traducciones del root (sga_cliente_root)
-  return new TranslateHttpLoader(http, '/assets/i18n/', '.json');
+  getTranslation(lang: string): Observable<Record<string, unknown>> {
+    const rootUrl = `/assets/i18n/${lang}.json`;
+    const coreBase = typeof __webpack_public_path__ === 'string'
+      ? __webpack_public_path__
+      : '/';
+    const coreUrl = `${coreBase}assets/i18n/${lang}.json`;
+    const urls = Array.from(new Set([rootUrl, coreUrl]));
+
+    return forkJoin(
+      urls.map((url) =>
+        this.http
+          .get<Record<string, unknown>>(url)
+          .pipe(catchError(() => of({})))
+      )
+    ).pipe(
+      map((translations) =>
+        translations.reduce(
+          (merged, current) => ({ ...merged, ...current }),
+          {}
+        )
+      )
+    );
+  }
+}
+
+export function createTranslateLoader(handler: HttpBackend) {
+  return new CoreTranslateLoader(new HttpClient(handler));
 }
 
 export const appConfig: ApplicationConfig = {
@@ -47,7 +75,7 @@ export const appConfig: ApplicationConfig = {
       defaultLanguage: 'es',
       loader: {
         provide: TranslateLoader,
-        deps: [HttpClient],
+        deps: [HttpBackend],
         useFactory: createTranslateLoader
       }
     }).providers!
