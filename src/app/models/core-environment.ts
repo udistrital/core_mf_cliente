@@ -7,7 +7,6 @@ export interface CoreTokenEnvironment {
   SIGN_OUT_URL: string;
   SIGN_OUT_REDIRECT_URL: string;
   AUTENTICACION_MID: string;
-  ISSUER?: string;
 }
 
 export interface CoreEnvironment {
