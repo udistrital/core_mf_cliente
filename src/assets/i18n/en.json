@@ -2,6 +2,7 @@
   "auth": {
     "session_token_warning": "Your session will close in {{value}} {{unit}} because the token is about to expire",
     "session_idle_warning": "Your session will close in {{value}} {{unit}} due to inactivity",
+    "continue_session": "Continue session",
     "time": {
       "minute": "minute",
       "minutes": "minutes",

@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import Swal from 'sweetalert2';
 import { ImplicitAutenticationService } from './implicit_autentication.service';
 
 describe('ImplicitAutenticationService', () => {
@@ -27,7 +28,13 @@ describe('ImplicitAutenticationService', () => {
         provideHttpClientTesting(),
         {
           provide: TranslateService,
-          useValue: { get: (key: string) => of(key) },
+          useValue: {
+            get: (key: string | string[]) => of(
+              Array.isArray(key)
+                ? Object.fromEntries(key.map((translationKey) => [translationKey, translationKey]))
+                : key
+            ),
+          },
         },
       ],
     });
@@ -92,7 +99,72 @@ describe('ImplicitAutenticationService', () => {
     expect((expiration as Date).getTime()).toBeLessThanOrEqual(Date.now() + 60_000);
   });
 
+  it('shows the token warning for ten seconds with manual close controls', () => {
+    const alert = spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: false } as any);
+
+    (service as any).showWarning('auth.session_token_warning', 5 * 60 * 1000);
+
+    expect(alert).toHaveBeenCalledWith(jasmine.objectContaining({
+      icon: 'info',
+      showCloseButton: true,
+      showConfirmButton: false,
+      timer: 10 * 1000,
+      timerProgressBar: true,
+    }));
+  });
+
+  it('renews activity when the user confirms the inactivity warning', async () => {
+    localStorage.setItem('id_token', 'id-token');
+    const recordActivity = spyOn<any>(service, 'recordActivity');
+    const alert = spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: true } as any);
+
+    (service as any).showWarning('auth.session_idle_warning', 30 * 1000);
+    await advanceMicrotasks();
+
+    expect(alert).toHaveBeenCalledWith(jasmine.objectContaining({
+      confirmButtonText: 'auth.continue_session',
+      icon: 'warning',
+      showCloseButton: true,
+      showConfirmButton: true,
+      timer: 30 * 1000,
+      timerProgressBar: true,
+    }));
+    expect(recordActivity).toHaveBeenCalled();
+  });
+
+  it('shows the token warning immediately when already inside the warning period', () => {
+    const payload = btoa(JSON.stringify({ exp: Math.floor((Date.now() + 60_000) / 1000) }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    localStorage.setItem('id_token', `header.${payload}.signature`);
+    localStorage.setItem('expires_at', new Date(Date.now() + 10_000).toISOString());
+    const showWarning = spyOn<any>(service, 'showWarning');
+
+    (service as any).scheduleSessionTimers();
+
+    expect(showWarning).toHaveBeenCalledWith(
+      'auth.session_token_warning',
+      jasmine.any(Number)
+    );
+  });
+
+  it('shows the inactivity warning immediately when already inside the warning period', () => {
+    localStorage.setItem('core_last_activity', String(
+      Date.now() - (15 * 60 * 1000 + 20 * 1000)
+    ));
+    const showWarning = spyOn<any>(service, 'showWarning');
+
+    (service as any).scheduleIdleTimers();
+
+    expect(showWarning).toHaveBeenCalledWith(
+      'auth.session_idle_warning',
+      jasmine.any(Number)
+    );
+  });
+
   it('accepts a callback only when state, nonce and audience match', async () => {
+    spyOn<any>(service, 'hasValidAccessTokenHash').and.resolveTo(true);
     const state = 'expected-state';
     const nonce = 'expected-nonce';
     sessionStorage.setItem('core_auth_transaction', JSON.stringify({
@@ -102,6 +174,7 @@ describe('ImplicitAutenticationService', () => {
     }));
     const idToken = createIdToken({
       aud: environment.CLIENTE_ID,
+      at_hash: 'access-token-hash',
       email: 'user@example.com',
       exp: Math.floor((Date.now() + 120_000) / 1000),
       nonce,
@@ -113,6 +186,7 @@ describe('ImplicitAutenticationService', () => {
       id_token: idToken,
       state,
     }));
+    await advanceMicrotasks();
     httpTesting.expectOne(environment.AUTENTICACION_MID).flush({ role: ['DOCENTE'] });
 
     await expectAsync(callback).toBeResolvedTo('/calendario-academico');
@@ -135,6 +209,48 @@ describe('ImplicitAutenticationService', () => {
     await expectAsync(callback).toBeRejectedWithError(/state retornado/);
     expect(localStorage.getItem('access_token')).toBeNull();
     httpTesting.expectNone(environment.AUTENTICACION_MID);
+  });
+
+  it('clears the transaction when WSO2 returns a malformed ID token', async () => {
+    sessionStorage.setItem('core_auth_transaction', JSON.stringify({
+      state: 'expected-state',
+      nonce: 'expected-nonce',
+      returnUrl: '/',
+    }));
+
+    const callback = (service as any).processCallback(new URLSearchParams({
+      access_token: 'access-token',
+      id_token: 'malformed-token',
+      state: 'expected-state',
+    }));
+
+    await expectAsync(callback).toBeRejectedWithError(/ID token malformado/);
+    expect(sessionStorage.getItem('core_auth_transaction')).toBeNull();
+    expect(localStorage.getItem('access_token')).toBeNull();
+    httpTesting.expectNone(environment.AUTENTICACION_MID);
+  });
+
+  it('validates the access token hash from the ID token', async () => {
+    await expectAsync(
+      (service as any).hasValidAccessTokenHash('access-token', 'Pxa-1wifRlPl7yG_0oJNfw')
+    ).toBeResolvedTo(true);
+    await expectAsync(
+      (service as any).hasValidAccessTokenHash('tampered-token', 'Pxa-1wifRlPl7yG_0oJNfw')
+    ).toBeResolvedTo(false);
+  });
+
+  it('removes callback tokens from the URL before processing them', async () => {
+    let finishCallback!: (returnUrl: string) => void;
+    spyOn<any>(service, 'processCallback').and.returnValue(
+      new Promise<string>((resolve) => finishCallback = resolve)
+    );
+    window.history.replaceState({}, '', '/#id_token=sensitive-token');
+
+    const initialization = service.init(environment);
+
+    expect(window.location.hash).toBe('');
+    finishCallback('/');
+    await initialization;
   });
 
   it('clears a token from another environment without calling WSO2 logout', async () => {
@@ -169,5 +285,9 @@ describe('ImplicitAutenticationService', () => {
       .replace(/\//g, '_')
       .replace(/=+$/, '');
     return `header.${encodedPayload}.signature`;
+  }
+
+  async function advanceMicrotasks(): Promise<void> {
+    for (let index = 0; index < 4; index += 1) await Promise.resolve();
   }
 });

@@ -107,6 +107,7 @@ export class ImplicitAutenticationService implements OnDestroy {
     }
 
     if (callbackParams.has('id_token')) {
+      this.clearUrl();
       returnUrl = await this.processCallback(callbackParams);
     } else {
       const idToken = localStorage.getItem('id_token');
@@ -343,8 +344,14 @@ export class ImplicitAutenticationService implements OnDestroy {
       throw new Error('WSO2 no retorno los tokens requeridos');
     }
 
-    const payload = this.decodeJwtPayload(idToken);
-    if (!this.isValidCallbackToken(payload, transaction.nonce)) {
+    let payload: any;
+    try {
+      payload = this.decodeJwtPayload(idToken);
+    } catch {
+      this.rejectCallback();
+      throw new Error('WSO2 retorno un ID token malformado');
+    }
+    if (!(await this.isValidCallbackToken(accessToken, payload, transaction.nonce))) {
       this.rejectCallback();
       throw new Error('El ID token retornado por WSO2 no supera las validaciones OIDC');
     }
@@ -370,26 +377,39 @@ export class ImplicitAutenticationService implements OnDestroy {
     return transaction.returnUrl;
   }
 
-  private isValidCallbackToken(payload: any, expectedNonce: string): boolean {
+  private async isValidCallbackToken(
+    accessToken: string,
+    payload: any,
+    expectedNonce: string
+  ): Promise<boolean> {
     const audience = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-    const issuerIsValid = !this.environment.ISSUER || payload.iss === this.environment.ISSUER;
-    return Boolean(
+    const authorizedPartyIsValid = audience.length === 1
+      ? !payload.azp || payload.azp === this.environment.CLIENTE_ID
+      : payload.azp === this.environment.CLIENTE_ID;
+    const claimsAreValid = Boolean(
       payload &&
       typeof payload.exp === 'number' &&
       payload.exp * 1000 > Date.now() &&
       audience.includes(this.environment.CLIENTE_ID) &&
       payload.nonce === expectedNonce &&
-      issuerIsValid
+      authorizedPartyIsValid
     );
+    if (!claimsAreValid) return false;
+
+    return this.hasValidAccessTokenHash(accessToken, payload.at_hash);
   }
 
   private isValidStoredToken(payload: any): boolean {
     const audience = Array.isArray(payload?.aud) ? payload.aud : [payload?.aud];
+    const authorizedPartyIsValid = audience.length === 1
+      ? !payload?.azp || payload.azp === this.environment.CLIENTE_ID
+      : payload?.azp === this.environment.CLIENTE_ID;
     return Boolean(
       payload &&
       typeof payload.exp === 'number' &&
+      payload.exp * 1000 > Date.now() &&
       audience.includes(this.environment.CLIENTE_ID) &&
-      (!this.environment.ISSUER || payload.iss === this.environment.ISSUER)
+      authorizedPartyIsValid
     );
   }
 
@@ -406,10 +426,30 @@ export class ImplicitAutenticationService implements OnDestroy {
   private decodeJwtPayload(token: string): any {
     const parts = token.split('.');
     if (parts.length !== 3) throw new Error('JWT invalido');
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(new TextDecoder().decode(this.decodeBase64Url(parts[1])));
+  }
+
+  private async hasValidAccessTokenHash(accessToken: string, expectedHash: unknown): Promise<boolean> {
+    if (typeof expectedHash !== 'string') return false;
+    const digest = new Uint8Array(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode(accessToken))
+    );
+    const leftHalf = digest.slice(0, digest.length / 2);
+    const encoded = this.encodeBase64Url(leftHalf);
+    return encoded === expectedHash;
+  }
+
+  private encodeBase64Url(value: Uint8Array): string {
+    return btoa(Array.from(value, (byte) => String.fromCharCode(byte)).join(''))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  }
+
+  private decodeBase64Url(value: string): Uint8Array {
+    const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
     const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-    const bytes = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
-    return JSON.parse(new TextDecoder().decode(bytes));
+    return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
   }
 
   private readAuthTransaction(): AuthTransaction | null {
@@ -466,11 +506,22 @@ export class ImplicitAutenticationService implements OnDestroy {
     }
 
     this.expirationTimer = setTimeout(() => this.logout('logout-auto'), remaining);
-    if (remaining > this.tokenWarningBeforeMs && !this.tokenWarningShown) {
-      this.expirationWarningTimer = setTimeout(() => {
+    if (!this.tokenWarningShown) {
+      const showTokenWarning = () => {
         this.tokenWarningShown = true;
-        this.showWarning('auth.session_token_warning', this.tokenWarningBeforeMs);
-      }, remaining - this.tokenWarningBeforeMs);
+        this.showWarning(
+          'auth.session_token_warning',
+          Math.min(remaining, this.tokenWarningBeforeMs)
+        );
+      };
+      if (remaining > this.tokenWarningBeforeMs) {
+        this.expirationWarningTimer = setTimeout(
+          showTokenWarning,
+          remaining - this.tokenWarningBeforeMs
+        );
+      } else {
+        showTokenWarning();
+      }
     }
   }
 
@@ -486,18 +537,32 @@ export class ImplicitAutenticationService implements OnDestroy {
     }
 
     this.idleTimer = setTimeout(() => this.logout('logout-inactivity'), remaining);
-    if (remaining > this.idleWarningBeforeMs && !this.idleWarningShown) {
-      this.idleWarningTimer = setTimeout(() => {
+    if (!this.idleWarningShown) {
+      const showIdleWarning = () => {
         this.idleWarningShown = true;
-        this.showWarning('auth.session_idle_warning', this.idleWarningBeforeMs);
-      }, remaining - this.idleWarningBeforeMs);
+        this.showWarning(
+          'auth.session_idle_warning',
+          Math.min(remaining, this.idleWarningBeforeMs)
+        );
+      };
+      if (remaining > this.idleWarningBeforeMs) {
+        this.idleWarningTimer = setTimeout(
+          showIdleWarning,
+          remaining - this.idleWarningBeforeMs
+        );
+      } else {
+        showIdleWarning();
+      }
     }
   }
 
   private showWarning(messageKey: string, remainingMs: number): void {
     const translate = this.injector.get(TranslateService);
-    const usesMinutes = remainingMs % (60 * 1000) === 0;
-    const value = usesMinutes ? remainingMs / (60 * 1000) : remainingMs / 1000;
+    const isIdleWarning = messageKey === 'auth.session_idle_warning';
+    const usesMinutes = remainingMs >= 60 * 1000;
+    const value = Math.max(1, Math.ceil(
+      usesMinutes ? remainingMs / (60 * 1000) : remainingMs / 1000
+    ));
     const unitKey = usesMinutes
       ? value === 1 ? 'auth.time.minute' : 'auth.time.minutes'
       : value === 1 ? 'auth.time.second' : 'auth.time.seconds';
@@ -505,16 +570,27 @@ export class ImplicitAutenticationService implements OnDestroy {
     translate
       .get(unitKey)
       .pipe(
-        switchMap((unit) => translate.get(messageKey, { value, unit })),
+        switchMap((unit) => translate.get(
+          [messageKey, 'auth.continue_session'],
+          { value, unit }
+        )),
         take(1)
       )
-      .subscribe((title) => {
+      .subscribe((translations) => {
         void Swal.fire({
           position: 'center',
-          icon: 'info',
-          title,
-          showConfirmButton: false,
-          timer: 4000,
+          icon: isIdleWarning ? 'warning' : 'info',
+          title: translations[messageKey],
+          showConfirmButton: isIdleWarning,
+          confirmButtonText: isIdleWarning
+            ? translations['auth.continue_session']
+            : undefined,
+          timer: isIdleWarning ? remainingMs : 10 * 1000,
+          timerProgressBar: true,
+        }).then((result) => {
+          if (isIdleWarning && result.isConfirmed && localStorage.getItem('id_token')) {
+            this.recordActivity(Date.now());
+          }
         });
       });
   }

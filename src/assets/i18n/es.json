@@ -2,6 +2,7 @@
   "auth": {
     "session_token_warning": "Su sesión se cerrará en {{value}} {{unit}} porque el token está por vencer",
     "session_idle_warning": "Su sesión se cerrará en {{value}} {{unit}} por inactividad",
+    "continue_session": "Continuar sesión",
     "time": {
       "minute": "minuto",
       "minutes": "minutos",
