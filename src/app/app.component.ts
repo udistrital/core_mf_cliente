@@ -11,6 +11,7 @@ import { getCookie } from './header/header.component';
 import { ControlSizeContainerService } from './services/controlSizeContainer.service';
 import { ImplicitAutenticationService } from './services/implicit_autentication.service';
 import { FloatingButtonIrisComponent } from './floating-button-iris/floating-button-iris.component';
+import { CoreEnvironment, resolveCoreEnvironment } from './models/core-environment';
 
 @Component({
   selector: 'core-mf',
@@ -22,7 +23,7 @@ import { FloatingButtonIrisComponent } from './floating-button-iris/floating-but
 export class AppComponent implements OnInit {
   opened: boolean = false;
   userData = { user: null, userService: null };
-  environment = environment;
+  environment: CoreEnvironment = resolveCoreEnvironment(environment);
   whatLang$ = fromEvent(window, 'lang');
 
   constructor(
@@ -32,8 +33,9 @@ export class AppComponent implements OnInit {
     private autenticacionService: ImplicitAutenticationService
   ) {
     singleSpaPropsSubject.subscribe((props) => {
-      // TODO: Ver la manera de usar esta info que viene del root
-      this.environment = Object.assign(environment, props.environment);
+      if (props.environment) {
+        this.environment = resolveCoreEnvironment(environment, props.environment);
+      }
     });
     this.menuService.sidebar$.subscribe((opened) => (this.opened = opened));
     window.addEventListener('single-spa:before-routing-event', (event: any) => {
@@ -69,8 +71,10 @@ export class AppComponent implements OnInit {
     this.whatLang$.subscribe((x: any) => {
       lang = x['detail']['answer'];
       this.translate.setDefaultLang(lang);
+      this.translate.use(lang);
     });
-    this.translate.setDefaultLang(getCookie('lang') || 'es');
+    this.translate.setDefaultLang(lang);
+    this.translate.use(lang);
   }
 
   ngOnDestroy(): void {

@@ -926,9 +926,10 @@ export class DialogoFormularioPagadorComponent implements OnInit, OnDestroy, Aft
 
     const errorHttp = error instanceof HttpErrorResponse ? error : null;
     const status = errorHttp?.status;
-    const translatedStatus = status ? this.translate.instant('formulario_pagador.ERROR.' + status) : '';
+    const statusKey = `formulario_pagador.ERROR.${status}`;
+    const translatedStatus = status ? this.translate.instant(statusKey) : '';
     const translatedContext = this.translate.instant(contexto);
-    const text = translatedStatus && translatedStatus !== ('formulario_pagador.ERROR.' + status)
+    const text = translatedStatus && translatedStatus !== statusKey
       ? translatedStatus
       : translatedContext;
 

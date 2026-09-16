@@ -142,7 +142,6 @@ export class HeaderComponent implements OnChanges {
       this.roles_sga = roles;
     }
     this.rolSeleccionado = String( this.roles_sga[0] );
-    console.log(this.rolSeleccionado);
   }
   private subscribeToMenuActivo(): void {
     this.notificacionesService.menuActivo$.subscribe((menuActivo: boolean) => {

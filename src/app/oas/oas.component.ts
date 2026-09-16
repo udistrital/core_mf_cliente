@@ -18,6 +18,7 @@ import { LoginComponent } from '../login/login.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { lang } from '../services/globals';
+import { CoreEnvironment } from '../models/core-environment';
 
 
 // if (!("path" in Event.prototype))
@@ -51,7 +52,7 @@ export class OasComponent implements OnChanges {
   @Output('option') option: EventEmitter<any> = new EventEmitter();
   @Output('logout') logout: EventEmitter<any> = new EventEmitter();
   // tslint:disable-next-line: no-input-rename
-  @Input('environment') environment: any;
+  @Input('environment') environment!: CoreEnvironment;
   private entornoListo = false;
   CONFIGURACION_SERVICE: any;
   opened = false;
@@ -93,7 +94,7 @@ export class OasComponent implements OnChanges {
     }
   }
 
-  private async procesarEnvironment(env: any): Promise<void> {
+  private async procesarEnvironment(env: CoreEnvironment): Promise<void> {
     const {
       CONFIGURACION_SERVICE,
       entorno,
@@ -114,12 +115,17 @@ export class OasComponent implements OnChanges {
     this.notificaciones = notificaciones;
     this.menuApps = menuApps;
     this.CONFIGURACION_SERVICE = CONFIGURACION_SERVICE;
-    lang.lang = TOKEN.REDIRECT_URL;
+    if (TOKEN?.REDIRECT_URL) {
+      lang.lang = TOKEN.REDIRECT_URL;
+    }
     this.entornoListo = true;
     this.isloading = true;
 
     try {
       if (autenticacion) {
+        if (!TOKEN) {
+          throw new Error('El Root no proporciono la configuracion TOKEN');
+        }
         await this.autenticacionService.init(TOKEN);
         this.autenticacionService.login(true);
         this.suscribirUsuario();
