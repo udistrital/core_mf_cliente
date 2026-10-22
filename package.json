@@ -1,6 +1,7 @@
 {
   "name": "core-mf",
   "version": "0.0.0",
+  "packageManager": "pnpm@8.15.9",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 127.0.0.1 --port 4201",

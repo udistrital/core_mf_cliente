@@ -27,8 +27,9 @@ steps:
   image: node:lts-bullseye
   commands:
   - node --version
-  - npm i
-  - npm run build
+  - corepack enable
+  - pnpm install --frozen-lockfile
+  - pnpm run build:test
   when:
     branch:
     - develop
@@ -39,8 +40,9 @@ steps:
   image: node:lts-bullseye
   commands:
   - node --version
-  - npm i
-  - npm run build:test
+  - corepack enable
+  - pnpm install --frozen-lockfile
+  - pnpm run build:test
   when:
     branch:
     - release/*
@@ -51,8 +53,9 @@ steps:
   image: node:lts-bullseye
   commands:
   - node --version
-  - npm i
-  - npm run build:prod
+  - corepack enable
+  - pnpm install --frozen-lockfile
+  - pnpm run build:prod
   when:
     branch:
     - master
