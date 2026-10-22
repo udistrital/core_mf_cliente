@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { LoadComponent } from '../load/load.component';
+import { getSharedAssetUrl } from '../../single-spa/shared-asset-url';
 
 @Component({
   selector: 'ng-uui-login',
@@ -10,7 +11,7 @@ import { LoadComponent } from '../load/load.component';
 })
 export class LoginComponent implements OnInit {
   @Input('appname') appname: any;
-  basePathAssets = 'https://pruebasassets.portaloas.udistrital.edu.co/';
+  basePathAssets = getSharedAssetUrl();
   @Input('isloading') isloading: boolean = false;
   @Output('loginEvent') loginEvent: EventEmitter<any> = new EventEmitter();
   constructor() {}

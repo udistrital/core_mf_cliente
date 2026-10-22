@@ -12,6 +12,7 @@ import {
   ChangeDetectorRef,
   Output,
   EventEmitter,
+  HostBinding,
   OnChanges,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
@@ -25,6 +26,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '../services/users.service';
 import { NotioasComponent } from '../notioas/notioas.component';
 import { CommonModule } from '@angular/common';
+import { getSharedAssetUrl } from '../../single-spa/shared-asset-url';
 
 enum VisibilityState {
   Visible = 'visible',
@@ -79,7 +81,9 @@ export class HeaderComponent implements OnChanges {
   sidebar = false;
   load = true;
   cerrarSesion: boolean = false;
-  basePathAssets = 'https://pruebasassets.portaloas.udistrital.edu.co/';
+  basePathAssets = getSharedAssetUrl();
+  @HostBinding('style.--header-logo-image')
+  headerLogoImage = `url("${getSharedAssetUrl('isotipos-75x75.png')}")`;
 
   langs: string[] = ['es', 'en']; // idiomas que va a soportar nuestra aplicacion
   langCookie: string = 'en';

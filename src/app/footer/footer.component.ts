@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { getSharedAssetUrl } from '../../single-spa/shared-asset-url';
 
 @Component({
   selector: 'ng-uui-footer',
@@ -14,7 +15,7 @@ export class FooterComponent {
   final: any;
   copyright: any;
   social: any;
-  basePathAssets = 'https://pruebasassets.portaloas.udistrital.edu.co/';
+  basePathAssets = getSharedAssetUrl();
 
   constructor() {
     this.social = {

@@ -21,7 +21,7 @@ p {
     display: none;
     border: none;
     box-shadow: none;
-    background: url(https://pruebasassets.portaloas.udistrital.edu.co/isotipos-75x75.png);
+    background-image: var(--header-logo-image);
     margin: 10px;
     background-repeat: no-repeat;
     cursor: pointer;
