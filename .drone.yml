@@ -32,6 +32,7 @@ steps:
   - pnpm run build:test
   when:
     branch:
+    - feature/*
     - develop
     event:
     - push
@@ -58,14 +59,18 @@ steps:
   - pnpm run build:prod
   when:
     branch:
+    - hotfix/*
     - master
     event:
     - push
 
 - name: publish_s3_release
   image: plugins/s3
+  depends_on:
+  - nodejs_release
   settings:
-    bucket: cliente-core-pruebas
+    bucket:
+      from_secret: BUCKET_CLIENTES_TEST
     access_key:
       from_secret: aws_access_key_id
     secret_key:
@@ -82,8 +87,11 @@ steps:
 
 - name: publish_s3_master
   image: plugins/s3
+  depends_on:
+  - nodejs_master
   settings:
-    bucket: cliente-core-prod
+    bucket:
+      from_secret: BUCKET_CLIENTES_PROD
     access_key:
       from_secret: aws_access_key_id
     secret_key:
