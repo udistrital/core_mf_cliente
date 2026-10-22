@@ -1,6 +1,7 @@
 import { Component, NO_ERRORS_SCHEMA, OnInit } from '@angular/core';
 import { MenuAplicacionesService } from '../services/menuAplicaciones.service';
 import {  AsyncPipe } from "@angular/common";
+import { getSharedAssetUrl } from '../../single-spa/shared-asset-url';
 
 
 @Component({
@@ -14,7 +15,7 @@ import {  AsyncPipe } from "@angular/common";
 export class MenuAplicacionesComponent implements OnInit {
 
   activo: any;
-  basePathAssets = 'https://pruebasassets.portaloas.udistrital.edu.co/'
+  basePathAssets = getSharedAssetUrl();
 
   constructor( public menuService: MenuAplicacionesService) {
 
