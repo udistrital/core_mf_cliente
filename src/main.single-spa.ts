@@ -18,6 +18,7 @@ import { DialogoPagadorService } from './app/services/dialogo-pagador.service';
 // Exportar componentes y servicios públicos
 export { DialogoFormularioPagadorComponent } from './app/dialogo-formulario-pagador/dialogo-formulario-pagador.component';
 export { DialogoPagadorService } from './app/services/dialogo-pagador.service';
+export { getSharedAssetUrl } from './single-spa/shared-asset-url';
 
 // Variable global para almacenar el injector
 let coreInjector: Injector | null = null;

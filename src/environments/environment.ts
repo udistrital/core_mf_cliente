@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  assets: 'https://pruebasassets.portaloas.udistrital.edu.co/',
+  assets: 'https://assets.portaloas.udistrital.edu.co/',
   CONFIGURACION_SERVICE: 'https://autenticacion.portaloas.udistrital.edu.co/apioas/configuracion_crud_api/v1/',
 
   // Notificaciones
